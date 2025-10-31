@@ -1,0 +1,239 @@
+/**
+ * CPS Progress Stepper - Professional Redesign
+ * Clean, minimal, trendy design with 3-group layout
+ */
+
+.cps-progress-stepper {
+  background: white;
+  border-bottom: var(--border-width-thin) solid var(--color-neutral-200);
+  padding: var(--space-6) var(--space-8);
+  box-shadow: none;
+}
+
+.stepper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-5);
+}
+
+.stepper-header h2 {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-900);
+  letter-spacing: -0.01em;
+}
+
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.current-step {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-neutral-600);
+}
+
+.progress-bar-mini {
+  width: 80px;
+  height: 2px;
+  background: var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-primary-500);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* Grouped Layout Container */
+.stepper-container-grouped {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+
+/* Group Item */
+.stepper-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  position: relative;
+  flex: 1;
+}
+
+/* Group Indicator (Circle) */
+.group-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.group-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-100);
+  border: var(--border-width-thick) solid var(--color-neutral-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+/* Active Group */
+.stepper-group.active .group-icon {
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Completed Group */
+.stepper-group.completed .group-icon {
+  border-color: transparent;
+}
+
+/* Pending Group */
+.stepper-group.pending .group-icon {
+  background: var(--color-neutral-50);
+  border-color: var(--color-neutral-200);
+}
+
+/* Pulse Animation for Active */
+.pulse-dot {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: var(--radius-full);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+/* Group Number */
+.group-number {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-500);
+}
+
+/* Group Content */
+.group-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.group-label {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-900);
+}
+
+.stepper-group.pending .group-label {
+  color: var(--color-neutral-400);
+}
+
+/* Group Status */
+.group-status {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-neutral-600);
+}
+
+.group-status.completed {
+  color: var(--color-success);
+}
+
+.group-status.pending {
+  color: var(--color-neutral-400);
+}
+
+/* Group Progress Bar */
+.group-progress-bar {
+  height: 6px;
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-1);
+}
+
+.group-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* Group Connector */
+.group-connector {
+  width: 40px;
+  height: 2px;
+  background: var(--color-neutral-200);
+  transition: background var(--duration-normal) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.group-connector.completed {
+  background: var(--color-success);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cps-progress-stepper {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .stepper-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .stepper-header h2 {
+    font-size: var(--text-lg);
+  }
+
+  .stepper-container-grouped {
+    flex-direction: column;
+    gap: var(--space-6);
+    padding: var(--space-3) 0;
+  }
+
+  .stepper-group {
+    width: 100%;
+  }
+
+  .group-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .group-label {
+    font-size: var(--text-sm);
+  }
+
+  .group-status {
+    font-size: var(--text-xs);
+  }
+
+  .group-connector {
+    display: none;
+  }
+}
