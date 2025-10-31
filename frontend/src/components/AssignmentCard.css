@@ -1,0 +1,86 @@
+.assignment-card {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 2px solid #FBBF24;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+  animation: slideInDown 0.4s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.assignment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.875rem;
+}
+
+.assignment-icon {
+  flex-shrink: 0;
+  color: #D97706;
+}
+
+.assignment-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92400E;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.assignment-content {
+  background: white;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #FCD34D;
+}
+
+.assignment-content p {
+  margin: 0;
+  color: #1F2937;
+  line-height: 1.7;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .assignment-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .assignment-header {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .assignment-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .assignment-title {
+    font-size: 0.875rem;
+  }
+
+  .assignment-content {
+    padding: 0.875rem 1rem;
+  }
+
+  .assignment-content p {
+    font-size: 0.875rem;
+  }
+}

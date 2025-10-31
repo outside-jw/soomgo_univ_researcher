@@ -5,7 +5,11 @@
 export interface Message {
   role: 'user' | 'agent';
   content: string;
-  timestamp?: string;
+  timestamp: string;
+  metacog_elements?: string[];
+  response_depth?: string;
+  reasoning?: string;
+  current_stage?: string;
 }
 
 export interface ScaffoldingData {

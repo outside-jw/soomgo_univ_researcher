@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     # Gemini API
     GEMINI_API_KEY: str
+    GEMINI_MODEL: str = "gemini-2.0-flash-exp"
 
     # Database
     DATABASE_URL: str = "sqlite:///./univ_consult.db"

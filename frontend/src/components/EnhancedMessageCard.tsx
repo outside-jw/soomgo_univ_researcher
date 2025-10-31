@@ -12,6 +12,7 @@ interface Message {
   metacog_elements?: string[];
   response_depth?: string;
   current_stage?: string;
+  reasoning?: string;
 }
 
 interface Props {

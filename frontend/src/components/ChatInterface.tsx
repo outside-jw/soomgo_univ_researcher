@@ -1,9 +1,14 @@
 /**
- * Main chat interface component
+ * Main chat interface component with enhanced UI
  */
 import { useState, useRef, useEffect } from 'react';
 import { chatApi } from '../services/api';
 import type { Message, ScaffoldingData } from '../types';
+import CPSProgressStepper from './CPSProgressStepper';
+import MetacognitionSidebar from './MetacognitionSidebar';
+import EnhancedMessageCard from './EnhancedMessageCard';
+import AssignmentCard from './AssignmentCard';
+import StageTransitionNotification from './StageTransitionNotification';
 import './ChatInterface.css';
 
 export default function ChatInterface() {
@@ -11,9 +16,19 @@ export default function ChatInterface() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [assignmentText, setAssignmentText] = useState<string>('');
   const [currentStage, setCurrentStage] = useState<string>('');
+  const [completedStages, setCompletedStages] = useState<string[]>([]);
   const [scaffoldingInfo, setScaffoldingInfo] = useState<ScaffoldingData | null>(null);
+  const [metacogStats, setMetacogStats] = useState({
+    monitoring: 0,
+    control: 0,
+    knowledge: 0,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionInfo, setTransitionInfo] = useState<{ from: string; to: string } | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -22,6 +37,19 @@ export default function ChatInterface() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Update metacog stats when new scaffolding arrives
+  useEffect(() => {
+    if (scaffoldingInfo?.detected_metacog_needs) {
+      const newStats = { ...metacogStats };
+      scaffoldingInfo.detected_metacog_needs.forEach((element: string) => {
+        if (element === '점검') newStats.monitoring++;
+        else if (element === '조절') newStats.control++;
+        else if (element === '지식') newStats.knowledge++;
+      });
+      setMetacogStats(newStats);
+    }
+  }, [scaffoldingInfo]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -33,31 +61,52 @@ export default function ChatInterface() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue('');
     setIsLoading(true);
 
     try {
+      // Create session if this is the first message
+      let currentSessionId = sessionId;
+      if (!currentSessionId) {
+        const sessionResponse = await chatApi.createSession(currentInput);
+        currentSessionId = sessionResponse.session_id;
+        setSessionId(currentSessionId);
+        setAssignmentText(currentInput); // Save the assignment text
+      }
+
       const response = await chatApi.sendMessage({
-        session_id: sessionId || undefined,
-        message: inputValue,
+        session_id: currentSessionId,
+        message: currentInput,
         conversation_history: messages,
         current_stage: currentStage || undefined,
       });
 
-      // Update session ID if new
-      if (!sessionId) {
-        setSessionId(response.session_id);
-      }
+      // Update stage tracking and detect transitions
+      const newStage = response.scaffolding_data.current_stage;
+      const shouldTransition = response.scaffolding_data.should_transition;
 
-      // Update current stage
-      setCurrentStage(response.scaffolding_data.current_stage);
+      if (newStage !== currentStage && currentStage) {
+        setCompletedStages(prev => [...new Set([...prev, currentStage])]);
+
+        // Show transition notification if stage changed
+        if (shouldTransition) {
+          setTransitionInfo({ from: currentStage, to: newStage });
+          setShowTransition(true);
+        }
+      }
+      setCurrentStage(newStage);
       setScaffoldingInfo(response.scaffolding_data);
 
-      // Add agent response
+      // Add agent response with metadata
       const agentMessage: Message = {
         role: 'agent',
         content: response.agent_message,
         timestamp: response.timestamp,
+        metacog_elements: response.scaffolding_data.detected_metacog_needs,
+        response_depth: response.scaffolding_data.response_depth,
+        reasoning: response.scaffolding_data.reasoning,
+        current_stage: response.scaffolding_data.current_stage,
       };
 
       setMessages(prev => [...prev, agentMessage]);
@@ -81,96 +130,133 @@ export default function ChatInterface() {
     }
   };
 
-  const getStageName = (stage: string): string => {
-    const stageMap: Record<string, string> = {
-      '도전_이해_기회구성': '도전 이해 - 기회 구성',
-      '도전_이해_자료탐색': '도전 이해 - 자료 탐색',
-      '도전_이해_문제구조화': '도전 이해 - 문제 구조화',
-      '아이디어_생성': '아이디어 생성',
-      '실행_준비_해결책고안': '실행 준비 - 해결책 고안',
-      '실행_준비_수용구축': '실행 준비 - 수용 구축',
-    };
-    return stageMap[stage] || stage;
-  };
-
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <h1>창의적 문제해결 스캐폴딩 에이전트</h1>
-        {currentStage && (
-          <div className="stage-info">
-            <span className="stage-label">현재 단계:</span>
-            <span className="stage-value">{getStageName(currentStage)}</span>
-          </div>
-        )}
-      </div>
+    <div className="chat-interface-container">
+      {/* CPS Progress Stepper */}
+      <CPSProgressStepper currentStage={currentStage} completedStages={completedStages} />
 
-      <div className="messages-container">
-        {messages.length === 0 && (
-          <div className="welcome-message">
-            <h2>안녕하세요! 👋</h2>
-            <p>저는 여러분의 창의적 문제해결을 돕는 AI 에이전트입니다.</p>
-            <p>해결하고 싶은 문제나 고민을 자유롭게 말씀해주세요.</p>
-          </div>
+      <div className="chat-main-area">
+        {/* Metacognition Sidebar */}
+        {sidebarOpen && (
+          <MetacognitionSidebar
+            stats={metacogStats}
+            currentDepth={scaffoldingInfo?.response_depth || ''}
+            totalMessages={messages.length}
+          />
         )}
 
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`message ${msg.role}`}>
-            <div className="message-avatar">
-              {msg.role === 'user' ? '👤' : '🤖'}
-            </div>
-            <div className="message-content">
-              <div className="message-text">{msg.content}</div>
-              <div className="message-time">
-                {msg.timestamp && new Date(msg.timestamp).toLocaleTimeString('ko-KR')}
+        {/* Chat Area */}
+        <div className="chat-content-area">
+          <div className="messages-container-enhanced">
+            {/* Assignment Card - shown when session is active */}
+            {assignmentText && <AssignmentCard assignmentText={assignmentText} />}
+
+            {messages.length === 0 && (
+              <div className="welcome-message-enhanced">
+                <div className="welcome-icon">🎯</div>
+                <h2>창의적 문제해결을 시작해볼까요?</h2>
+                <p className="welcome-description">
+                  AI 에이전트가 당신의 창의적 사고를 촉진하여<br />
+                  더 나은 해결책을 찾을 수 있도록 도와드립니다.
+                </p>
+                <div className="welcome-features">
+                  <div className="feature-item">
+                    <span className="feature-text">체계적인 문제 분석</span>
+                  </div>
+                  <div className="feature-item">
+                    <span className="feature-text">다양한 아이디어 생성</span>
+                  </div>
+                  <div className="feature-item">
+                    <span className="feature-text">실행 가능한 해결책</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            )}
 
-        {isLoading && (
-          <div className="message agent">
-            <div className="message-avatar">🤖</div>
-            <div className="message-content">
-              <div className="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+            {messages.map((msg, idx) => (
+              <EnhancedMessageCard key={idx} message={msg} />
+            ))}
+
+            {isLoading && (
+              <div className="enhanced-message agent">
+                <div className="message-avatar-enhanced">
+                  <div className="avatar-circle agent-avatar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path
+                        d="M10 0L12.5 5L17.5 5.5L13.75 9.5L15 15L10 12L5 15L6.25 9.5L2.5 5.5L7.5 5L10 0Z"
+                        fill="white"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div className="message-content-enhanced">
+                  <div className="typing-indicator-enhanced">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
               </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="input-container-enhanced">
+            <div className="input-wrapper">
+              <textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="여기에 메시지를 입력하세요... (Shift+Enter로 줄바꿈)"
+                disabled={isLoading}
+                rows={3}
+                className="input-textarea"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={isLoading || !inputValue.trim()}
+                className="send-button"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="spinner" width="20" height="20" viewBox="0 0 20 20">
+                      <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="2" fill="none" />
+                    </svg>
+                    전송 중...
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2 10L18 2L10 18L8 10L2 10Z" fill="currentColor" />
+                    </svg>
+                    전송
+                  </>
+                )}
+              </button>
             </div>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {scaffoldingInfo && (
-        <div className="scaffolding-info">
-          <div className="info-item">
-            <strong>메타인지 요소:</strong> {scaffoldingInfo.detected_metacog_needs.join(', ')}
-          </div>
-          <div className="info-item">
-            <strong>응답 깊이:</strong> {scaffoldingInfo.response_depth}
           </div>
         </div>
-      )}
-
-      <div className="input-container">
-        <textarea
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="메시지를 입력하세요... (Shift+Enter로 줄바꿈)"
-          disabled={isLoading}
-          rows={3}
-        />
-        <button
-          onClick={handleSendMessage}
-          disabled={isLoading || !inputValue.trim()}
-        >
-          {isLoading ? '전송 중...' : '전송'}
-        </button>
       </div>
+
+      {/* Mobile Sidebar Toggle */}
+      <button
+        className="sidebar-toggle-mobile"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle sidebar"
+      >
+        {sidebarOpen ? '◀' : '▶'}
+      </button>
+
+      {/* Stage Transition Notification */}
+      {showTransition && transitionInfo && (
+        <StageTransitionNotification
+          fromStage={transitionInfo.from}
+          toStage={transitionInfo.to}
+          onClose={() => setShowTransition(false)}
+        />
+      )}
     </div>
   );
 }

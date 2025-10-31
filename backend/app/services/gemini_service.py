@@ -11,14 +11,29 @@ from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Constants
+MAX_CONTEXT_MESSAGES = 5  # Number of previous messages to include in context
+
 
 class GeminiService:
     """Service for interacting with Google Gemini API"""
 
     def __init__(self):
-        """Initialize Gemini API with configuration"""
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        """Initialize Gemini API with configuration
+
+        Raises:
+            ValueError: If GEMINI_API_KEY is not configured or initialization fails
+        """
+        if not settings.GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY environment variable is not set")
+
+        try:
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            self.model = genai.GenerativeModel(settings.GEMINI_MODEL)
+            logger.info(f"Gemini API initialized with model: {settings.GEMINI_MODEL}")
+        except Exception as e:
+            logger.error(f"Failed to initialize Gemini API: {e}", exc_info=True)
+            raise ValueError(f"Failed to configure Gemini API: {e}") from e
 
         # System prompt for CPS scaffolding
         self.system_prompt = """당신은 예비교사들의 창의적 문제해결(CPS)을 돕는 메타인지 촉진 에이전트입니다.
@@ -122,13 +137,13 @@ JSON 형태로 다음 정보를 제공:
             return result
 
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse Gemini response as JSON: {e}")
-            logger.error(f"Raw response: {result_text}")
+            logger.error(f"Failed to parse Gemini response as JSON: {e}", exc_info=True)
+            logger.error(f"Raw response: {response.text if 'response' in locals() else 'N/A'}")
             # Fallback response
             return self._create_fallback_response(user_message)
 
         except Exception as e:
-            logger.error(f"Error generating scaffolding: {e}")
+            logger.error(f"Error generating scaffolding: {e}", exc_info=True)
             return self._create_fallback_response(user_message)
 
     def _build_context(
@@ -141,7 +156,7 @@ JSON 형태로 다음 정보를 제공:
             return "없음 (첫 대화)"
 
         context_parts = []
-        for msg in conversation_history[-5:]:  # Last 5 messages
+        for msg in conversation_history[-MAX_CONTEXT_MESSAGES:]:
             role = "학습자" if msg["role"] == "user" else "에이전트"
             context_parts.append(f"{role}: {msg['content']}")
 

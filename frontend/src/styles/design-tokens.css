@@ -1,0 +1,280 @@
+/**
+ * Design Tokens - Professional UI System
+ * Modern, minimal, and trendy design system for CPS Scaffolding Agent
+ *
+ * Philosophy:
+ * - 90% neutral grays + 8% primary + 2% accent
+ * - No gradients, only solid colors
+ * - Functional animations only (150-300ms)
+ * - Systematic 4px spacing grid
+ * - Clear hierarchy through size and weight
+ */
+
+:root {
+  /* ============================================
+     COLORS - PRIMARY (Indigo Brand)
+     ============================================ */
+  --color-primary-50: #EEF2FF;
+  --color-primary-100: #E0E7FF;
+  --color-primary-200: #C7D2FE;
+  --color-primary-300: #A5B4FC;
+  --color-primary-400: #818CF8;
+  --color-primary-500: #6366F1;  /* Main brand color */
+  --color-primary-600: #4F46E5;  /* Hover states */
+  --color-primary-700: #4338CA;  /* Active states */
+  --color-primary-800: #3730A3;
+  --color-primary-900: #312E81;
+
+  /* ============================================
+     COLORS - NEUTRAL (Gray Scale)
+     ============================================ */
+  --color-neutral-50: #F9FAFB;   /* Lightest backgrounds */
+  --color-neutral-100: #F3F4F6;  /* Subtle backgrounds */
+  --color-neutral-200: #E5E7EB;  /* Borders */
+  --color-neutral-300: #D1D5DB;  /* Disabled states */
+  --color-neutral-400: #9CA3AF;  /* Placeholder text */
+  --color-neutral-500: #6B7280;  /* Secondary text */
+  --color-neutral-600: #4B5563;  /* Icons */
+  --color-neutral-700: #374151;  /* Primary text */
+  --color-neutral-800: #1F2937;  /* Emphasis text */
+  --color-neutral-900: #111827;  /* Headings */
+
+  /* ============================================
+     COLORS - SEMANTIC (Functional)
+     ============================================ */
+
+  /* Success (Green) - Deep responses, completion */
+  --color-success: #10B981;
+  --color-success-50: #ECFDF5;
+  --color-success-100: #D1FAE5;
+  --color-success-200: #A7F3D0;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+
+  /* Warning (Amber) - Medium responses, caution */
+  --color-warning: #F59E0B;
+  --color-warning-50: #FFFBEB;
+  --color-warning-100: #FEF3C7;
+  --color-warning-200: #FDE68A;
+  --color-warning-600: #D97706;
+  --color-warning-700: #B45309;
+
+  /* Error (Red) - Shallow responses, errors */
+  --color-error: #EF4444;
+  --color-error-50: #FEF2F2;
+  --color-error-100: #FEE2E2;
+  --color-error-200: #FECACA;
+  --color-error-600: #DC2626;
+  --color-error-700: #B91C1C;
+
+  /* Info (Blue) - Knowledge element, informational */
+  --color-info: #3B82F6;
+  --color-info-50: #EFF6FF;
+  --color-info-100: #DBEAFE;
+  --color-info-200: #BFDBFE;
+  --color-info-600: #2563EB;
+  --color-info-700: #1D4ED8;
+
+  /* Accent (Purple) - Special highlights only, use sparingly */
+  --color-accent: #8B5CF6;
+  --color-accent-50: #F5F3FF;
+  --color-accent-100: #EDE9FE;
+
+  /* ============================================
+     TYPOGRAPHY - SIZES (8pt scale)
+     ============================================ */
+  --text-xs: 0.75rem;      /* 12px - Small labels, captions */
+  --text-sm: 0.875rem;     /* 14px - Body small, UI text */
+  --text-base: 1rem;       /* 16px - Body text */
+  --text-lg: 1.125rem;     /* 18px - Large body, emphasized */
+  --text-xl: 1.25rem;      /* 20px - Section headings */
+  --text-2xl: 1.5rem;      /* 24px - Page titles */
+  --text-3xl: 1.875rem;    /* 30px - Hero text, main headings */
+
+  /* ============================================
+     TYPOGRAPHY - WEIGHTS (Semantic)
+     ============================================ */
+  --font-normal: 400;      /* Body text */
+  --font-medium: 500;      /* Emphasis, UI elements */
+  --font-semibold: 600;    /* Subheadings, important text */
+  --font-bold: 700;        /* Headings, strong emphasis */
+
+  /* ============================================
+     TYPOGRAPHY - LINE HEIGHTS
+     ============================================ */
+  --leading-tight: 1.25;   /* Headings, compact text */
+  --leading-normal: 1.5;   /* Body text, optimal readability */
+  --leading-relaxed: 1.75; /* Large text blocks, comfortable reading */
+
+  /* ============================================
+     SPACING (4px base unit)
+     ============================================ */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-7: 1.75rem;   /* 28px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-14: 3.5rem;   /* 56px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+
+  /* ============================================
+     BORDER RADIUS (Moderate, professional)
+     ============================================ */
+  --radius-sm: 0.375rem;   /* 6px - Buttons, tags, small elements */
+  --radius-md: 0.5rem;     /* 8px - Cards, inputs, standard elements */
+  --radius-lg: 0.75rem;    /* 12px - Modals, large containers */
+  --radius-xl: 1rem;       /* 16px - Extra large containers */
+  --radius-full: 9999px;   /* Pills, avatars, circular elements */
+
+  /* ============================================
+     SHADOWS (Subtle elevation)
+     ============================================ */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);          /* Subtle borders */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);           /* Cards at rest */
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);          /* Elevated cards */
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08);        /* Modals, popovers */
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);         /* Floating elements */
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.12);       /* Maximum elevation */
+
+  /* Focus ring shadow */
+  --shadow-focus: 0 0 0 3px var(--color-primary-100);
+
+  /* ============================================
+     ANIMATION (Functional, subtle)
+     ============================================ */
+
+  /* Timing Functions */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);  /* Smooth both directions */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);       /* Entering elements */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);        /* Exiting elements */
+
+  /* Durations */
+  --duration-fast: 150ms;      /* Micro-interactions, hover */
+  --duration-normal: 200ms;    /* Most transitions, state changes */
+  --duration-slow: 300ms;      /* Larger movements, modals */
+
+  /* ============================================
+     Z-INDEX SCALE (Layering hierarchy)
+     ============================================ */
+  --z-base: 0;          /* Default layer */
+  --z-dropdown: 1000;   /* Dropdown menus */
+  --z-sticky: 1100;     /* Sticky elements */
+  --z-overlay: 1200;    /* Overlay backgrounds */
+  --z-modal: 1300;      /* Modal dialogs */
+  --z-toast: 1400;      /* Toast notifications */
+  --z-tooltip: 1500;    /* Tooltips */
+
+  /* ============================================
+     BREAKPOINTS (Responsive design)
+     ============================================ */
+  --breakpoint-sm: 640px;    /* Small devices */
+  --breakpoint-md: 768px;    /* Medium devices */
+  --breakpoint-lg: 1024px;   /* Large devices */
+  --breakpoint-xl: 1280px;   /* Extra large devices */
+  --breakpoint-2xl: 1536px;  /* 2X large devices */
+
+  /* ============================================
+     LAYOUT (Container, content widths)
+     ============================================ */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+
+  --content-width-narrow: 45rem;   /* 720px - Optimal reading */
+  --content-width-normal: 60rem;   /* 960px - Standard content */
+  --content-width-wide: 75rem;     /* 1200px - Wide layouts */
+
+  /* ============================================
+     BORDERS (Consistent stroke widths)
+     ============================================ */
+  --border-width-thin: 1px;
+  --border-width-normal: 1.5px;
+  --border-width-thick: 2px;
+  --border-width-heavy: 4px;  /* Accent stripes */
+}
+
+/* ============================================
+   GLOBAL TYPOGRAPHY SETUP
+   ============================================ */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+               system-ui, sans-serif;
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  color: var(--color-neutral-700);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-neutral-900);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  margin: 0;
+}
+
+h1 { font-size: var(--text-3xl); font-weight: var(--font-bold); }
+h2 { font-size: var(--text-2xl); font-weight: var(--font-bold); }
+h3 { font-size: var(--text-xl); }
+h4 { font-size: var(--text-lg); }
+h5 { font-size: var(--text-base); }
+h6 { font-size: var(--text-sm); }
+
+/* ============================================
+   GLOBAL FOCUS STYLES (Accessibility)
+   ============================================ */
+*:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   UTILITY CLASSES (Common patterns)
+   ============================================ */
+
+/* Text utilities */
+.text-primary { color: var(--color-primary-600); }
+.text-secondary { color: var(--color-neutral-500); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-error { color: var(--color-error); }
+
+/* Background utilities */
+.bg-primary { background-color: var(--color-primary-500); }
+.bg-subtle { background-color: var(--color-neutral-50); }
+.bg-white { background-color: white; }
+
+/* Shadow utilities */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+
+/* Border utilities */
+.border-default { border: var(--border-width-thin) solid var(--color-neutral-200); }
+.border-primary { border-color: var(--color-primary-500); }
+
+/* Transition utilities */
+.transition-fast { transition: all var(--duration-fast) var(--ease-out); }
+.transition-normal { transition: all var(--duration-normal) var(--ease-out); }
+.transition-slow { transition: all var(--duration-slow) var(--ease-out); }
