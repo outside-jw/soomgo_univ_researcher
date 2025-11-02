@@ -183,6 +183,13 @@ JSON 형태로 다음 정보를 제공:
 
             result = json.loads(result_text)
 
+            # Post-process: Ensure detected_metacog_needs is always a list
+            if "detected_metacog_needs" in result:
+                if isinstance(result["detected_metacog_needs"], str):
+                    # Convert string to list
+                    result["detected_metacog_needs"] = [result["detected_metacog_needs"]]
+                    logger.warning(f"Converted detected_metacog_needs from string to list: {result['detected_metacog_needs']}")
+
             logger.info(f"Generated scaffolding for stage: {result.get('current_stage')}")
             return result
 
