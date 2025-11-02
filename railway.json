@@ -5,7 +5,7 @@
     "buildCommand": "cd backend && pip install -r requirements.txt"
   },
   "deploy": {
-    "startCommand": "cd backend && python -c \"from app.db.migrations import migrate_add_turn_tracking_columns; migrate_add_turn_tracking_columns()\" || true && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2",
+    "startCommand": "chmod +x backend/start.sh && backend/start.sh",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
