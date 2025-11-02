@@ -17,6 +17,14 @@ from .stage_transitions import (
     get_session_transitions,
     get_latest_stage
 )
+from .session_metrics import (
+    get_or_create_session_metric,
+    update_turn_count,
+    get_turn_counts,
+    reset_stage_turns,
+    check_turn_limit,
+    TURN_LIMITS
+)
 
 __all__ = [
     # Sessions
@@ -34,4 +42,11 @@ __all__ = [
     "create_stage_transition",
     "get_session_transitions",
     "get_latest_stage",
+    # Session metrics
+    "get_or_create_session_metric",
+    "update_turn_count",
+    "get_turn_counts",
+    "reset_stage_turns",
+    "check_turn_limit",
+    "TURN_LIMITS",
 ]

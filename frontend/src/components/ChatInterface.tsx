@@ -3,12 +3,13 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import { chatApi } from '../services/api';
-import type { Message, ScaffoldingData } from '../types';
+import type { Message, ScaffoldingData, TurnCounts } from '../types';
 import CPSProgressStepper from './CPSProgressStepper';
 import MetacognitionSidebar from './MetacognitionSidebar';
 import EnhancedMessageCard from './EnhancedMessageCard';
 import AssignmentCard from './AssignmentCard';
 import StageTransitionNotification from './StageTransitionNotification';
+import TurnCounter from './TurnCounter';
 import './ChatInterface.css';
 
 export default function ChatInterface() {
@@ -29,6 +30,9 @@ export default function ChatInterface() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showTransition, setShowTransition] = useState(false);
   const [transitionInfo, setTransitionInfo] = useState<{ from: string; to: string } | null>(null);
+  const [turnCounts, setTurnCounts] = useState<TurnCounts | null>(null);
+  const [forcedTransition, setForcedTransition] = useState<boolean>(false);
+  const [forcedTransitionMessage, setForcedTransitionMessage] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -98,6 +102,15 @@ export default function ChatInterface() {
       setCurrentStage(newStage);
       setScaffoldingInfo(response.scaffolding_data);
 
+      // Update turn counts and forced transition state
+      if (response.turn_counts) {
+        setTurnCounts(response.turn_counts);
+      }
+      if (response.forced_transition) {
+        setForcedTransition(response.forced_transition);
+        setForcedTransitionMessage(response.forced_transition_message || null);
+      }
+
       // Add agent response with metadata
       const agentMessage: Message = {
         role: 'agent',
@@ -147,6 +160,16 @@ export default function ChatInterface() {
 
         {/* Chat Area */}
         <div className="chat-content-area">
+          {/* Turn Counter - shown when session is active and stage is set */}
+          {currentStage && turnCounts && (
+            <TurnCounter
+              currentStage={currentStage}
+              turnCounts={turnCounts}
+              forcedTransition={forcedTransition}
+              forcedTransitionMessage={forcedTransitionMessage || undefined}
+            />
+          )}
+
           <div className="messages-container-enhanced">
             {/* Assignment Card - shown when session is active */}
             {assignmentText && <AssignmentCard assignmentText={assignmentText} />}

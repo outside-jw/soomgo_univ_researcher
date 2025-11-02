@@ -97,6 +97,13 @@ class SessionMetric(Base):
     control_count = Column(Integer, default=0, nullable=False)  # 조절
     knowledge_count = Column(Integer, default=0, nullable=False)  # 지식
 
+    # Turn counts per CPS stage (for turn limit enforcement)
+    challenge_understanding_turns = Column(Integer, default=0, nullable=False)  # 도전_이해 (max: 6)
+    idea_generation_turns = Column(Integer, default=0, nullable=False)  # 아이디어_생성 (max: 8)
+    action_preparation_turns = Column(Integer, default=0, nullable=False)  # 실행_준비 (max: 6)
+    current_stage = Column(String(50), nullable=True)  # Current CPS stage
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
     # Time metrics
     session_duration_seconds = Column(Integer, nullable=True)
     avg_response_time_seconds = Column(Integer, nullable=True)

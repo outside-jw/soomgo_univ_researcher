@@ -21,10 +21,20 @@ export interface ScaffoldingData {
   reasoning: string;
 }
 
+export interface TurnCounts {
+  [stage: string]: {
+    current: number;
+    max: number;
+  };
+}
+
 export interface ChatResponse {
   session_id: string;
   agent_message: string;
   scaffolding_data: ScaffoldingData;
+  turn_counts?: TurnCounts;
+  forced_transition?: boolean;
+  forced_transition_message?: string;
   timestamp: string;
 }
 

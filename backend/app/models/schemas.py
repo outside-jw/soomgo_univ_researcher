@@ -31,11 +31,20 @@ class ScaffoldingResponse(BaseModel):
     reasoning: str = Field(..., description="Explanation of decision", max_length=1000)
 
 
+class TurnCounts(BaseModel):
+    """Turn counts for each CPS stage"""
+    current: int = Field(..., description="Current turn count")
+    max: int = Field(..., description="Maximum allowed turns")
+
+
 class ChatResponse(BaseModel):
     """Response from chat endpoint"""
     session_id: str = Field(..., description="Session ID")
     agent_message: str = Field(..., description="Agent's scaffolding question")
     scaffolding_data: ScaffoldingResponse = Field(..., description="Detailed scaffolding analysis")
+    turn_counts: Optional[dict] = Field(None, description="Turn counts per CPS stage")
+    forced_transition: Optional[bool] = Field(False, description="Whether stage transition was forced")
+    forced_transition_message: Optional[str] = Field(None, description="Message about forced transition")
     timestamp: datetime = Field(..., description="Response timestamp")
 
 

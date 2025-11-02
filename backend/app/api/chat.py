@@ -69,6 +69,28 @@ async def send_message(request: ChatRequest, db: SQLAlchemySession = Depends(get
         if not current_stage:
             current_stage = crud.get_latest_stage(db, session_id)
 
+        # Check turn limit BEFORE incrementing
+        current_turns, max_turns, limit_reached = crud.check_turn_limit(db, session_id, current_stage or "도전_이해")
+
+        # Force stage transition if turn limit reached
+        forced_transition = False
+        forced_transition_message = None
+        if limit_reached:
+            # Determine next stage based on current stage
+            stage_progression = {
+                "도전_이해": "아이디어_생성",
+                "아이디어_생성": "실행_준비",
+                "실행_준비": "실행_준비"  # Stay at final stage
+            }
+            next_stage = stage_progression.get(current_stage, "아이디어_생성")
+
+            # Only force transition if not at final stage
+            if current_stage != "실행_준비":
+                forced_transition = True
+                current_stage = next_stage
+                forced_transition_message = f"{current_stage} 단계의 최대 대화 턴 수({max_turns}턴)에 도달했습니다. 이제 {next_stage} 단계로 진행합니다."
+                logger.info(f"Forced stage transition for session {session_id}: {current_stage} -> {next_stage}")
+
         # Generate scaffolding using Gemini
         scaffolding_data = gemini_service.generate_scaffolding(
             user_message=request.message,
@@ -76,9 +98,12 @@ async def send_message(request: ChatRequest, db: SQLAlchemySession = Depends(get
             current_stage=current_stage
         )
 
-        # Check if stage transition occurred
+        # Update turn count for current stage
+        new_turns, max_turns, _ = crud.update_turn_count(db, session_id, scaffolding_data["current_stage"])
+
+        # Check if stage transition occurred (natural or forced)
         new_stage = scaffolding_data["current_stage"]
-        if new_stage != current_stage:
+        if new_stage != current_stage or forced_transition:
             # Record stage transition
             crud.create_stage_transition(
                 db=db,
@@ -102,15 +127,21 @@ async def send_message(request: ChatRequest, db: SQLAlchemySession = Depends(get
             reasoning=scaffolding_data.get("reasoning")
         )
 
+        # Get turn counts for all stages
+        turn_counts = crud.get_turn_counts(db, session_id)
+
         # Create response
         response = ChatResponse(
             session_id=session_id,
             agent_message=scaffolding_data["scaffolding_question"],
             scaffolding_data=ScaffoldingResponse(**scaffolding_data),
+            turn_counts=turn_counts,
+            forced_transition=forced_transition,
+            forced_transition_message=forced_transition_message,
             timestamp=datetime.now()
         )
 
-        logger.info(f"Generated response for session {session_id}, stage: {scaffolding_data['current_stage']}")
+        logger.info(f"Generated response for session {session_id}, stage: {scaffolding_data['current_stage']}, turns: {new_turns}/{max_turns}")
         return response
 
     except HTTPException:
