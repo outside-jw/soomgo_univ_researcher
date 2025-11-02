@@ -125,7 +125,7 @@ CPS 단계:
 JSON 형태로 다음 정보를 제공:
 {
   "current_stage": "CPS 단계 (예: 도전_이해, 아이디어_생성, 실행_준비)",
-  "detected_metacog_element": "정확히 하나의 메타인지 요소 (점검|조절|지식)",
+  "detected_metacog_needs": ["정확히 하나의 메타인지 요소 (점검|조절|지식)"],
   "response_depth": "shallow|medium|deep",
   "scaffolding_question": "1-2문장의 촉진 질문 (가능한 예시 질문 사용)",
   "should_transition": true|false,
@@ -150,7 +150,7 @@ JSON 형태로 다음 정보를 제공:
         Returns:
             Dictionary with scaffolding response including:
             - current_stage: Inferred CPS stage
-            - detected_metacog_element: Single metacognitive element to address (점검/조절/지식)
+            - detected_metacog_needs: List with single metacognitive element to address (["점검"|"조절"|"지식"])
             - response_depth: Assessment of response depth (shallow/medium/deep)
             - scaffolding_question: Question to promote thinking
             - should_transition: Whether to move to next CPS stage
@@ -168,7 +168,7 @@ JSON 형태로 다음 정보를 제공:
 
 학습자의 현재 응답: "{user_message}"
 
-위 응답을 분석하여 JSON 형식으로 응답해주세요. 응답에는 반드시 current_stage, detected_metacog_element, response_depth, scaffolding_question, should_transition, reasoning이 포함되어야 합니다."""
+위 응답을 분석하여 JSON 형식으로 응답해주세요. 응답에는 반드시 current_stage, detected_metacog_needs, response_depth, scaffolding_question, should_transition, reasoning이 포함되어야 합니다."""
 
             # Generate response
             response = self.model.generate_content(prompt)
@@ -219,7 +219,7 @@ JSON 형태로 다음 정보를 제공:
         """Create fallback response when Gemini fails"""
         return {
             "current_stage": "도전_이해",
-            "detected_metacog_element": "점검",
+            "detected_metacog_needs": ["점검"],
             "response_depth": "medium",
             "scaffolding_question": "조금 더 구체적으로 설명해주시겠어요? 어떤 부분이 가장 중요하다고 생각하시나요?",
             "should_transition": False,
