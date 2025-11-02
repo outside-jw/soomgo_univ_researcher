@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python -c \"from app.db.migrations import migrate_add_turn_tracking_columns; migrate_add_turn_tracking_columns()\" || true && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2",
+    "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
