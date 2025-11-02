@@ -1,0 +1,3 @@
+Frontend deployment trigger file
+Updated: 2025-11-02 12:55:00
+Purpose: Trigger Railway redeploy for stage transition UI button feature
