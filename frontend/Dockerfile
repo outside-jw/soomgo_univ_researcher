@@ -22,11 +22,13 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx configuration template and startup script
+COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
+COPY start-nginx.sh /start-nginx.sh
+RUN chmod +x /start-nginx.sh
 
-# Expose port
-EXPOSE 80
+# Expose port (Railway will use $PORT environment variable)
+EXPOSE 8080
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx with environment variable substitution
+CMD ["/start-nginx.sh"]
