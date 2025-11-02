@@ -69,27 +69,64 @@ async def send_message(request: ChatRequest, db: SQLAlchemySession = Depends(get
         if not current_stage:
             current_stage = crud.get_latest_stage(db, session_id)
 
+        # Check for explicit user transition request
+        user_wants_transition = False
+        requested_stage = None
+        user_message_lower = request.message.lower()
+
+        # Detect explicit transition keywords
+        transition_keywords = {
+            "아이디어": "아이디어_생성",
+            "아이디어 생성": "아이디어_생성",
+            "다음 단계": None,  # Generic next stage
+            "실행 준비": "실행_준비",
+            "실행": "실행_준비",
+        }
+
+        for keyword, stage in transition_keywords.items():
+            if keyword in user_message_lower and ("넘어가" in user_message_lower or "이동" in user_message_lower or "가자" in user_message_lower or "진행" in user_message_lower):
+                user_wants_transition = True
+                requested_stage = stage
+                break
+
         # Check turn limit BEFORE incrementing
         current_turns, max_turns, limit_reached = crud.check_turn_limit(db, session_id, current_stage or "도전_이해")
 
-        # Force stage transition if turn limit reached
+        # Force stage transition if turn limit reached OR user explicitly requests
         forced_transition = False
         forced_transition_message = None
-        if limit_reached:
+
+        if limit_reached or user_wants_transition:
             # Determine next stage based on current stage
             stage_progression = {
                 "도전_이해": "아이디어_생성",
                 "아이디어_생성": "실행_준비",
                 "실행_준비": "실행_준비"  # Stay at final stage
             }
-            next_stage = stage_progression.get(current_stage, "아이디어_생성")
+
+            # If user requested specific stage, use it; otherwise use progression
+            if user_wants_transition and requested_stage:
+                next_stage = requested_stage
+            elif user_wants_transition:
+                # Generic "next stage" request
+                next_stage = stage_progression.get(current_stage, "아이디어_생성")
+            else:
+                # Turn limit reached
+                next_stage = stage_progression.get(current_stage, "아이디어_생성")
 
             # Only force transition if not at final stage
             if current_stage != "실행_준비":
                 forced_transition = True
+                prev_stage = current_stage
                 current_stage = next_stage
-                forced_transition_message = f"{current_stage} 단계의 최대 대화 턴 수({max_turns}턴)에 도달했습니다. 이제 {next_stage} 단계로 진행합니다."
-                logger.info(f"Forced stage transition for session {session_id}: {current_stage} -> {next_stage}")
+
+                # Set appropriate message
+                if user_wants_transition:
+                    forced_transition_message = f"학습자 요청에 따라 {next_stage} 단계로 진행합니다."
+                    logger.info(f"User-requested stage transition for session {session_id}: {prev_stage} -> {next_stage}")
+                else:
+                    forced_transition_message = f"{prev_stage} 단계의 최대 대화 턴 수({max_turns}턴)에 도달했습니다. 이제 {next_stage} 단계로 진행합니다."
+                    logger.info(f"Turn-limit forced transition for session {session_id}: {prev_stage} -> {next_stage}")
 
         # Generate scaffolding using Gemini
         scaffolding_data = gemini_service.generate_scaffolding(
