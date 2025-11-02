@@ -83,8 +83,18 @@ async def send_message(request: ChatRequest, db: SQLAlchemySession = Depends(get
             "실행": "실행_준비",
         }
 
+        # Check if user explicitly wants to move to next stage
+        transition_indicators = [
+            "넘어가" in user_message_lower,
+            "이동" in user_message_lower,
+            "가자" in user_message_lower,
+            "진행" in user_message_lower,
+            "싶습니다" in user_message_lower and "이동" in user_message_lower,
+            "싶어요" in user_message_lower and "이동" in user_message_lower,
+        ]
+
         for keyword, stage in transition_keywords.items():
-            if keyword in user_message_lower and ("넘어가" in user_message_lower or "이동" in user_message_lower or "가자" in user_message_lower or "진행" in user_message_lower):
+            if keyword in user_message_lower and any(transition_indicators):
                 user_wants_transition = True
                 requested_stage = stage
                 break

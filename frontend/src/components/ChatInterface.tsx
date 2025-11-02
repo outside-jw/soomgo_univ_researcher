@@ -232,13 +232,22 @@ export default function ChatInterface() {
               <div className="stage-transition-hint">
                 <button
                   onClick={() => {
+                    if (isLoading) return;
+
                     const nextStageMap: { [key: string]: string } = {
                       '도전_이해': '아이디어_생성',
                       '아이디어_생성': '실행_준비',
                     };
                     const nextStage = nextStageMap[currentStage];
                     if (nextStage) {
-                      setInputValue(`이제 ${nextStage.replace('_', ' ')} 단계로 넘어가주세요.`);
+                      // Set the transition message in input
+                      const transitionMessage = `이제 ${nextStage.replace('_', ' ')} 단계로 이동하고 싶습니다.`;
+                      setInputValue(transitionMessage);
+
+                      // Trigger send automatically after setting input
+                      setTimeout(() => {
+                        handleSendMessage();
+                      }, 100);
                     }
                   }}
                   className="next-stage-button"
