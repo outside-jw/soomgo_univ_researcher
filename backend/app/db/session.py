@@ -88,21 +88,41 @@ def init_db():
     This should be called during application startup to create all tables
     and apply any necessary schema migrations
     """
-    from ..models.database import Base
-    from .migrations_pg import run_migrations_pg
+    logger.info("init_db() called - starting database initialization")
+
+    try:
+        logger.info("Importing database models...")
+        from ..models.database import Base
+        logger.info("✓ Database models imported successfully")
+
+        logger.info("Importing PostgreSQL migrations...")
+        from .migrations_pg import run_migrations_pg
+        logger.info("✓ PostgreSQL migrations module imported successfully")
+    except ImportError as ie:
+        logger.error(f"Import error during init_db: {ie}", exc_info=True)
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error during imports: {e}", exc_info=True)
+        raise
 
     try:
         # Create all tables if they don't exist
+        logger.info("Creating database tables...")
         Base.metadata.create_all(bind=engine)
-        logger.info("Database tables created successfully")
+        logger.info("✓ Database tables created successfully")
 
         # Run PostgreSQL migrations to add any missing columns
-        logger.info("Running PostgreSQL migrations...")
+        logger.info("Starting PostgreSQL migrations...")
         db = SessionLocal()
         try:
+            logger.info("Calling run_migrations_pg()...")
             run_migrations_pg(db)
-            logger.info("Migrations completed successfully")
+            logger.info("✓ Migrations completed successfully")
+        except Exception as migration_error:
+            logger.error(f"Migration execution failed: {migration_error}", exc_info=True)
+            raise
         finally:
+            logger.info("Closing migration database session")
             db.close()
 
     except Exception as e:
