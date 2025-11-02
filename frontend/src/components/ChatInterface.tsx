@@ -227,6 +227,32 @@ export default function ChatInterface() {
 
           {/* Input Area */}
           <div className="input-container-enhanced">
+            {/* Stage Transition Button - shown when not at final stage */}
+            {currentStage && currentStage !== '실행_준비' && messages.length > 0 && (
+              <div className="stage-transition-hint">
+                <button
+                  onClick={() => {
+                    const nextStageMap: { [key: string]: string } = {
+                      '도전_이해': '아이디어_생성',
+                      '아이디어_생성': '실행_준비',
+                    };
+                    const nextStage = nextStageMap[currentStage];
+                    if (nextStage) {
+                      setInputValue(`이제 ${nextStage.replace('_', ' ')} 단계로 넘어가주세요.`);
+                    }
+                  }}
+                  className="next-stage-button"
+                  disabled={isLoading}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginRight: '6px' }}>
+                    <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  다음 단계로 이동
+                </button>
+                <span className="hint-text">충분히 탐색했다면 다음 단계로 이동할 수 있습니다</span>
+              </div>
+            )}
+
             <div className="input-wrapper">
               <textarea
                 value={inputValue}

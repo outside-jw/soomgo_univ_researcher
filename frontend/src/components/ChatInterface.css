@@ -137,6 +137,67 @@
   text-align: center;
 }
 
+/* Stage Transition Hint */
+.stage-transition-hint {
+  max-width: 900px;
+  margin: 0 auto var(--space-4) auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.next-stage-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: var(--border-width-normal) solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.next-stage-button:hover:not(:disabled) {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-700);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.next-stage-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.next-stage-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.next-stage-button svg {
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.next-stage-button:hover:not(:disabled) svg {
+  transform: translateX(2px);
+}
+
+.hint-text {
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  text-align: center;
+  font-weight: var(--font-normal);
+}
+
 /* Input Container */
 .input-container-enhanced {
   padding: var(--space-6) var(--space-8);
@@ -320,6 +381,10 @@
   .input-container-enhanced {
     padding: var(--space-5) var(--space-6);
   }
+
+  .stage-transition-hint {
+    padding: 0 var(--space-6);
+  }
 }
 
 @media (max-width: 768px) {
@@ -341,6 +406,19 @@
 
   .input-container-enhanced {
     padding: var(--space-4);
+  }
+
+  .stage-transition-hint {
+    padding: 0 var(--space-4);
+  }
+
+  .next-stage-button {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-xs);
+  }
+
+  .hint-text {
+    font-size: 0.65rem;
   }
 
   .input-wrapper {
