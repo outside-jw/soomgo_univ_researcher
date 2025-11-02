@@ -83,15 +83,28 @@ def get_db_context() -> Generator[SQLAlchemySession, None, None]:
 
 def init_db():
     """
-    Initialize database tables
+    Initialize database tables and run migrations
 
     This should be called during application startup to create all tables
+    and apply any necessary schema migrations
     """
     from ..models.database import Base
+    from .migrations_pg import run_migrations_pg
 
     try:
+        # Create all tables if they don't exist
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
+
+        # Run PostgreSQL migrations to add any missing columns
+        logger.info("Running PostgreSQL migrations...")
+        db = SessionLocal()
+        try:
+            run_migrations_pg(db)
+            logger.info("Migrations completed successfully")
+        finally:
+            db.close()
+
     except Exception as e:
-        logger.error(f"Failed to create database tables: {e}", exc_info=True)
+        logger.error(f"Failed to initialize database: {e}", exc_info=True)
         raise
