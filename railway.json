@@ -1,0 +1,14 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd backend && pip install -r requirements.txt"
+  },
+  "deploy": {
+    "startCommand": "cd backend && python -c \"from app.db.migrations import migrate_add_turn_tracking_columns; migrate_add_turn_tracking_columns()\" || true && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}
