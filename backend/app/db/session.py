@@ -13,6 +13,14 @@ from ..core.config import settings
 logger = logging.getLogger(__name__)
 
 # Create database engine with optimized connection pooling
+# Determine connect_args based on database type
+connect_args = {}
+if settings.DATABASE_URL.startswith("postgresql"):
+    # PostgreSQL-specific connection arguments
+    connect_args = {
+        "connect_timeout": 10,  # Connection timeout in seconds
+    }
+
 engine = create_engine(
     settings.DATABASE_URL,
     poolclass=QueuePool,
@@ -21,10 +29,7 @@ engine = create_engine(
     pool_pre_ping=True,  # Verify connections before using
     pool_recycle=3600,  # Recycle connections after 1 hour
     echo=settings.DEBUG,  # Log SQL statements in debug mode
-    connect_args={
-        "connect_timeout": 10,  # Connection timeout in seconds
-        "options": "-c statement_timeout=30000"  # Query timeout 30s
-    } if settings.DATABASE_URL.startswith("postgresql") else {}
+    connect_args=connect_args
 )
 
 # Create session factory

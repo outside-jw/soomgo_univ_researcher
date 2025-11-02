@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting CPS Scaffolding Agent...")
     logger.info(f"Environment: {settings.ENVIRONMENT}")
     logger.info(f"Debug mode: {settings.DEBUG}")
+    logger.info(f"Database URL: {settings.DATABASE_URL[:20]}...")  # Log first 20 chars for debugging
 
     # Initialize database
     try:
@@ -44,7 +45,9 @@ async def lifespan(app: FastAPI):
         logger.info("Database initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}", exc_info=True)
-        raise
+        logger.error("Application will continue but database operations may fail")
+        # Don't raise - allow app to start even if DB init fails
+        # This is important for Railway healthchecks
 
     yield
     # Shutdown
