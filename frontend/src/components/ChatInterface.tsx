@@ -3,7 +3,7 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import { chatApi } from '../services/api';
-import type { Message, ScaffoldingData, TurnCounts } from '../types';
+import type { Message, ScaffoldingData } from '../types';
 import CPSProgressStepper from './CPSProgressStepper';
 import MetacognitionSidebar from './MetacognitionSidebar';
 import EnhancedMessageCard from './EnhancedMessageCard';
@@ -129,7 +129,6 @@ export default function ChatInterface() {
         {/* Metacognition Sidebar */}
         {sidebarOpen && (
           <MetacognitionSidebar
-            stats={metacogStats}
             currentDepth={scaffoldingInfo?.response_depth || ''}
             totalMessages={messages.length}
           />

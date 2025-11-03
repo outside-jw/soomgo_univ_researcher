@@ -5,14 +5,7 @@
 import { useState } from 'react';
 import './MetacognitionSidebar.css';
 
-interface MetacognitionStats {
-  monitoring: number;
-  control: number;
-  knowledge: number;
-}
-
 interface Props {
-  stats: MetacognitionStats;
   currentDepth: string;
   totalMessages: number;
 }
@@ -23,7 +16,7 @@ const DEPTH_INFO = {
   deep: { label: '깊은 사고', color: '#10B981' },
 };
 
-export default function MetacognitionSidebar({ stats, currentDepth, totalMessages }: Props) {
+export default function MetacognitionSidebar({ currentDepth, totalMessages }: Props) {
   const [showDetails, setShowDetails] = useState(false);
 
   return (
