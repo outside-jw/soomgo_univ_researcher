@@ -13,8 +13,6 @@ interface TurnCounts {
 interface TurnCounterProps {
   currentStage: string;
   turnCounts: TurnCounts | null;
-  forcedTransition?: boolean;
-  forcedTransitionMessage?: string;
 }
 
 const STAGE_NAMES: { [key: string]: string } = {
@@ -25,9 +23,7 @@ const STAGE_NAMES: { [key: string]: string } = {
 
 export default function TurnCounter({
   currentStage,
-  turnCounts,
-  forcedTransition,
-  forcedTransitionMessage
+  turnCounts
 }: TurnCounterProps) {
   if (!turnCounts || !currentStage) return null;
 
@@ -50,25 +46,6 @@ export default function TurnCounter({
 
   return (
     <div className={`turn-counter ${statusColor}`}>
-      {forcedTransition && forcedTransitionMessage && (
-        <div className="forced-transition-alert">
-          <svg
-            className="alert-icon"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>{forcedTransitionMessage}</span>
-        </div>
-      )}
-
       <div className="turn-counter-content">
         <div className="turn-counter-header">
           <span className="stage-name">{stageName}</span>

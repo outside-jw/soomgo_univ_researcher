@@ -8,7 +8,6 @@ import CPSProgressStepper from './CPSProgressStepper';
 import MetacognitionSidebar from './MetacognitionSidebar';
 import EnhancedMessageCard from './EnhancedMessageCard';
 import AssignmentCard from './AssignmentCard';
-import StageTransitionNotification from './StageTransitionNotification';
 import TurnCounter from './TurnCounter';
 import './ChatInterface.css';
 
@@ -28,11 +27,7 @@ export default function ChatInterface() {
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showTransition, setShowTransition] = useState(false);
-  const [transitionInfo, setTransitionInfo] = useState<{ from: string; to: string } | null>(null);
   const [turnCounts, setTurnCounts] = useState<TurnCounts | null>(null);
-  const [forcedTransition, setForcedTransition] = useState<boolean>(false);
-  const [forcedTransitionMessage, setForcedTransitionMessage] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -86,29 +81,18 @@ export default function ChatInterface() {
         current_stage: currentStage || undefined,
       });
 
-      // Update stage tracking and detect transitions
+      // Update stage tracking
       const newStage = response.scaffolding_data.current_stage;
-      const shouldTransition = response.scaffolding_data.should_transition;
 
       if (newStage !== currentStage && currentStage) {
         setCompletedStages(prev => [...new Set([...prev, currentStage])]);
-
-        // Show transition notification if stage changed
-        if (shouldTransition) {
-          setTransitionInfo({ from: currentStage, to: newStage });
-          setShowTransition(true);
-        }
       }
       setCurrentStage(newStage);
       setScaffoldingInfo(response.scaffolding_data);
 
-      // Update turn counts and forced transition state
+      // Update turn counts
       if (response.turn_counts) {
         setTurnCounts(response.turn_counts);
-      }
-      if (response.forced_transition) {
-        setForcedTransition(response.forced_transition);
-        setForcedTransitionMessage(response.forced_transition_message || null);
       }
 
       // Add agent response with metadata
@@ -165,8 +149,6 @@ export default function ChatInterface() {
             <TurnCounter
               currentStage={currentStage}
               turnCounts={turnCounts}
-              forcedTransition={forcedTransition}
-              forcedTransitionMessage={forcedTransitionMessage || undefined}
             />
           )}
 
@@ -306,15 +288,6 @@ export default function ChatInterface() {
       >
         {sidebarOpen ? '◀' : '▶'}
       </button>
-
-      {/* Stage Transition Notification */}
-      {showTransition && transitionInfo && (
-        <StageTransitionNotification
-          fromStage={transitionInfo.from}
-          toStage={transitionInfo.to}
-          onClose={() => setShowTransition(false)}
-        />
-      )}
     </div>
   );
 }
