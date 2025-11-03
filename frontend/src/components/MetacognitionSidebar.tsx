@@ -17,27 +17,6 @@ interface Props {
   totalMessages: number;
 }
 
-const METACOG_INFO = {
-  monitoring: {
-    label: '점검',
-    icon: '✓',
-    color: '#10B981',
-    description: '과제 특성 평가, 수행 예측',
-  },
-  control: {
-    label: '조절',
-    icon: '⚙',
-    color: '#F59E0B',
-    description: '전략 선택, 과제 조절',
-  },
-  knowledge: {
-    label: '지식',
-    icon: '✓',
-    color: '#3B82F6',
-    description: '경험 활용, 지식 적용',
-  },
-};
-
 const DEPTH_INFO = {
   shallow: { label: '간단한 답변', color: '#EF4444' },
   medium: { label: '보통 깊이', color: '#F59E0B' },
@@ -46,7 +25,6 @@ const DEPTH_INFO = {
 
 export default function MetacognitionSidebar({ stats, currentDepth, totalMessages }: Props) {
   const [showDetails, setShowDetails] = useState(false);
-  const maxCount = Math.max(stats.monitoring, stats.control, stats.knowledge, 1);
 
   return (
     <div className="metacognition-sidebar">
