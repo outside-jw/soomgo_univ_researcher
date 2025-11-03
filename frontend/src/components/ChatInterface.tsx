@@ -8,7 +8,6 @@ import CPSProgressStepper from './CPSProgressStepper';
 import MetacognitionSidebar from './MetacognitionSidebar';
 import EnhancedMessageCard from './EnhancedMessageCard';
 import AssignmentCard from './AssignmentCard';
-import TurnCounter from './TurnCounter';
 import './ChatInterface.css';
 
 export default function ChatInterface() {
@@ -27,7 +26,6 @@ export default function ChatInterface() {
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [turnCounts, setTurnCounts] = useState<TurnCounts | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -90,11 +88,6 @@ export default function ChatInterface() {
       setCurrentStage(newStage);
       setScaffoldingInfo(response.scaffolding_data);
 
-      // Update turn counts
-      if (response.turn_counts) {
-        setTurnCounts(response.turn_counts);
-      }
-
       // Add agent response with metadata
       const agentMessage: Message = {
         role: 'agent',
@@ -144,14 +137,6 @@ export default function ChatInterface() {
 
         {/* Chat Area */}
         <div className="chat-content-area">
-          {/* Turn Counter - shown when session is active and stage is set */}
-          {currentStage && turnCounts && (
-            <TurnCounter
-              currentStage={currentStage}
-              turnCounts={turnCounts}
-            />
-          )}
-
           <div className="messages-container-enhanced">
             {/* Assignment Card - shown when session is active */}
             {assignmentText && <AssignmentCard assignmentText={assignmentText} />}
