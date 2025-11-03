@@ -67,50 +67,12 @@ export default function MetacognitionSidebar({ stats, currentDepth, totalMessage
             <div className="stat-value">{totalMessages}</div>
             <div className="stat-label">총 메시지</div>
           </div>
-          <div className="stat-item">
-            <div className="stat-value">{stats.monitoring + stats.control + stats.knowledge}</div>
-            <div className="stat-label">사고 촉진 활동</div>
-          </div>
         </div>
       </div>
 
       {/* Detailed Information - Toggleable */}
       {showDetails && (
         <>
-          <div className="sidebar-section">
-            <div className="metacog-elements">
-              {(Object.keys(METACOG_INFO) as Array<keyof typeof METACOG_INFO>).map((key) => {
-                const info = METACOG_INFO[key];
-                const count = stats[key];
-                const percentage = (count / maxCount) * 100;
-
-                return (
-                  <div key={key} className="metacog-item">
-                    <div className="metacog-header">
-                      <div className="metacog-icon" style={{ background: info.color }}>
-                        {info.icon}
-                      </div>
-                      <div className="metacog-info">
-                        <div className="metacog-label">{info.label}</div>
-                        <div className="metacog-count">{count}회</div>
-                      </div>
-                    </div>
-                    <div className="metacog-bar">
-                      <div
-                        className="metacog-fill"
-                        style={{
-                          width: `${percentage}%`,
-                          background: info.color,
-                        }}
-                      />
-                    </div>
-                    <div className="metacog-description">{info.description}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="sidebar-section">
             <h3 className="section-title">생각의 깊이</h3>
             <div className="depth-indicator">
