@@ -99,14 +99,11 @@ async def send_message(request: ChatRequest, db: SQLAlchemySession = Depends(get
                 requested_stage = stage
                 break
 
-        # Check turn limit BEFORE incrementing
-        current_turns, max_turns, limit_reached = crud.check_turn_limit(db, session_id, current_stage or "도전_이해")
-
-        # Force stage transition if turn limit reached OR user explicitly requests
+        # Handle user-requested stage transitions ONLY (no automatic turn limit transitions)
         forced_transition = False
         forced_transition_message = None
 
-        if limit_reached or user_wants_transition:
+        if user_wants_transition:
             # Determine next stage based on current stage
             stage_progression = {
                 "도전_이해": "아이디어_생성",
@@ -115,28 +112,21 @@ async def send_message(request: ChatRequest, db: SQLAlchemySession = Depends(get
             }
 
             # If user requested specific stage, use it; otherwise use progression
-            if user_wants_transition and requested_stage:
+            if requested_stage:
                 next_stage = requested_stage
-            elif user_wants_transition:
+            else:
                 # Generic "next stage" request
                 next_stage = stage_progression.get(current_stage, "아이디어_생성")
-            else:
-                # Turn limit reached
-                next_stage = stage_progression.get(current_stage, "아이디어_생성")
 
-            # Only force transition if not at final stage
-            if current_stage != "실행_준비":
+            # Only transition if not at final stage or if specific stage was requested
+            if current_stage != "실행_준비" or requested_stage:
                 forced_transition = True
                 prev_stage = current_stage
                 current_stage = next_stage
 
-                # Set appropriate message
-                if user_wants_transition:
-                    forced_transition_message = f"학습자 요청에 따라 {next_stage} 단계로 진행합니다."
-                    logger.info(f"User-requested stage transition for session {session_id}: {prev_stage} -> {next_stage}")
-                else:
-                    forced_transition_message = f"{prev_stage} 단계의 최대 대화 턴 수({max_turns}턴)에 도달했습니다. 이제 {next_stage} 단계로 진행합니다."
-                    logger.info(f"Turn-limit forced transition for session {session_id}: {prev_stage} -> {next_stage}")
+                # Set transition message
+                forced_transition_message = f"학습자 요청에 따라 {next_stage} 단계로 진행합니다."
+                logger.info(f"User-requested stage transition for session {session_id}: {prev_stage} -> {next_stage}")
 
         # Generate scaffolding using Gemini
         scaffolding_data = gemini_service.generate_scaffolding(
