@@ -41,7 +41,8 @@ async def get_all_sessions(
         if user_id:
             sessions = crud.get_user_sessions(db, user_id, skip, limit)
         else:
-            sessions = db.query(Session).offset(skip).limit(limit).all()
+            # Order by created_at descending (newest first)
+            sessions = db.query(Session).order_by(Session.created_at.desc()).offset(skip).limit(limit).all()
 
         return {
             "total": len(sessions),

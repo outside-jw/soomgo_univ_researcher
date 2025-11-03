@@ -41,4 +41,22 @@ export const chatApi = {
   },
 };
 
+export const adminApi = {
+  /**
+   * Get all sessions for admin view
+   */
+  getAllSessions: async (): Promise<any[]> => {
+    const response = await api.get('/api/research/sessions');
+    return response.data;
+  },
+
+  /**
+   * Get conversations for a specific session
+   */
+  getSessionConversations: async (sessionId: string): Promise<any> => {
+    const response = await api.get(`/api/research/sessions/${sessionId}/conversations`);
+    return response.data;
+  },
+};
+
 export default api;

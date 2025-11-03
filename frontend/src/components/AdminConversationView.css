@@ -1,0 +1,151 @@
+.conversation-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.conversation-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.back-button {
+  padding: 8px 16px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #5568d3;
+}
+
+.assignment-display {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.assignment-display h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+}
+
+.assignment-display p {
+  font-size: 14px;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.conversation-item {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.conversation-item.user {
+  border-left: 4px solid #667eea;
+}
+
+.conversation-item.agent {
+  border-left: 4px solid #10b981;
+}
+
+.conversation-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.conversation-role {
+  font-size: 13px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.conversation-item.agent .conversation-role {
+  color: #10b981;
+}
+
+.conversation-time {
+  font-size: 12px;
+  color: #a0aec0;
+}
+
+.conversation-message {
+  font-size: 14px;
+  color: #2d3748;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.conversation-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.metadata-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stage-badge {
+  background-color: #e0e7ff;
+  color: #5a67d8;
+}
+
+.depth-badge {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.depth-badge.depth-shallow {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.depth-badge.depth-medium {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.depth-badge.depth-deep {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.metacog-badge {
+  background-color: #fce7f3;
+  color: #be185d;
+}
