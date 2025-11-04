@@ -13,4 +13,4 @@
   height: 100vh;
   overflow: hidden;
 }
-/* Force Railway deployment - admin routes fix */
+/* Force Railway deployment - admin routes fix with env vars */
