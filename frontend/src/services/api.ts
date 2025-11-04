@@ -45,7 +45,7 @@ export const adminApi = {
   /**
    * Get all sessions for admin view
    */
-  getAllSessions: async (): Promise<any[]> => {
+  getAllSessions: async (): Promise<{ total: number; sessions: any[] }> => {
     const response = await api.get('/api/research/sessions');
     return response.data;
   },
