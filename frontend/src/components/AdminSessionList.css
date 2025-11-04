@@ -122,3 +122,5 @@
   font-size: 13px;
   color: #718096;
 }
+
+/* Deployment trigger: force rebuild to deploy scrollbar CSS fixes */
