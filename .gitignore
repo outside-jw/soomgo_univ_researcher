@@ -45,3 +45,6 @@ htmlcov/
 
 # Railway
 .railway/
+
+# Serena MCP
+.serena/
