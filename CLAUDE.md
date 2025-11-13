@@ -75,11 +75,87 @@ The agent follows specific questioning patterns for each CPS stage:
 
 ### Key Components
 
-- **Context Manager**: Tracks conversation history and session state
-- **CPS Stage Detector**: Infers current CPS stage from learner responses
-- **Metacognitive Analyzer**: Identifies lacking metacognitive elements (monitoring/control/knowledge)
-- **Scaffolding Generator**: Creates 1-2 sentence questions based on metacognitive needs
-- **LLM Orchestrator**: Manages Gemini API calls and prompt engineering
+- **Context Manager**: Tracks conversation history and session state (implemented in CRUD operations)
+- **CPS Stage Detector**: Infers current CPS stage from learner responses (Gemini-based)
+- **Metacognitive Analyzer**: Identifies lacking metacognitive elements (Gemini-based)
+- **Scaffolding Generator**: Creates 1-2 sentence questions based on metacognitive needs (Gemini-based)
+- **LLM Orchestrator**: `GeminiService` class manages API calls and prompt engineering
+
+### Implementation Architecture
+
+**Backend Structure** (`backend/app/`):
+```
+app/
+├── main.py                    # FastAPI app, CORS, SPA serving, lifespan events
+├── api/
+│   ├── chat.py               # Chat endpoints (session, message)
+│   └── research.py           # Research data export (sessions, CSV)
+├── services/
+│   └── gemini_service.py     # GeminiService class (singleton)
+├── crud/
+│   ├── sessions.py           # Session CRUD operations
+│   ├── conversations.py      # Conversation CRUD operations
+│   ├── stage_transitions.py # Stage transition logging
+│   └── session_metrics.py   # Session metrics calculation
+├── models/
+│   ├── database.py           # SQLAlchemy models (Session, Conversation, etc.)
+│   └── schemas.py            # Pydantic schemas for API
+├── db/
+│   ├── session.py            # Database session management
+│   └── migrations.py         # Custom migration scripts
+├── core/
+│   └── config.py             # Configuration and settings
+└── resources/
+    └── question_bank.py      # Fallback questions if Gemini fails
+```
+
+**Frontend Structure** (`frontend/src/`):
+```
+src/
+├── App.tsx                   # Main app with routing
+├── components/
+│   ├── ChatInterface.tsx     # Main chat UI
+│   ├── AssignmentCard.tsx    # Assignment display
+│   ├── CPSProgressStepper.tsx      # Visual CPS stage indicator
+│   ├── EnhancedMessageCard.tsx     # Message bubbles with metadata
+│   ├── MetacognitionSidebar.tsx    # Metacognition element display
+│   ├── StageTransitionNotification.tsx  # Stage change alerts
+│   ├── AdminLogin.tsx        # Admin authentication
+│   ├── AdminSessionList.tsx  # Session list for admin
+│   └── AdminConversationView.tsx   # Detailed conversation view
+├── services/
+│   └── api.ts                # API client (Axios)
+├── types/
+│   └── index.ts              # TypeScript type definitions
+└── constants/
+    └── scaffolding.ts        # CPS stage and metacog definitions
+```
+
+**Key Implementation Details**:
+
+1. **GeminiService (`backend/app/services/gemini_service.py:18`)**:
+   - Singleton pattern with `gemini_service` module-level instance
+   - `__init__` method builds comprehensive system prompt from question bank
+   - `generate_scaffolding()` sends user message + context → receives JSON response
+   - `_build_context()` limits conversation history to last 6 messages (MAX_CONTEXT_MESSAGES)
+   - `_create_fallback_response()` provides default questions if Gemini fails
+
+2. **Chat API (`backend/app/api/chat.py`)**:
+   - Session-based conversation tracking (session must exist before sending messages)
+   - Stores user messages and agent responses in database
+   - Logs stage transitions when detected
+   - Returns scaffolding data alongside agent message
+
+3. **Database Models (`backend/app/models/database.py`)**:
+   - `Session`: User sessions with assignment context
+   - `Conversation`: Individual messages with CPS stage and metacog annotations
+   - `StageTransition`: Logs of stage changes for analysis
+   - `SessionMetric`: Aggregated metrics per session
+
+4. **Frontend State Management**:
+   - Uses Zustand for global state (admin auth)
+   - Component-local state for chat interface
+   - React Router for admin/user route separation
 
 ## Design Principles
 
@@ -163,45 +239,86 @@ The Gemini API calls use a structured system prompt that includes:
 
 ## Development Workflow
 
-### Backend (FastAPI)
+### Backend Setup and Development
 
 ```bash
+# Navigate to backend directory
+cd backend
+
 # Setup virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install fastapi uvicorn sqlalchemy psycopg2-binary google-generativeai redis websockets
+pip install -r requirements.txt
 
-# Run development server
+# Setup environment variables
+cp .env.example .env
+# Edit .env and add your GEMINI_API_KEY
+
+# Run development server (uses in-memory SQLite by default)
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Frontend (React + TypeScript)
+**API Documentation**: Available at http://localhost:8000/docs (FastAPI Swagger UI)
+
+### Frontend Setup and Development
 
 ```bash
+# Navigate to frontend directory
+cd frontend
+
 # Install dependencies
 npm install
 
 # Run development server
 npm run dev
-
-# Build for production
-npm run build
 ```
 
-### Database
+**Default Port**: http://localhost:5173 (Vite default)
+
+### Testing
 
 ```bash
-# Start PostgreSQL (using Docker)
-docker-compose up -d postgres
+# Backend tests (from backend/ directory)
+pytest                          # Run all tests
+pytest tests/test_api.py        # Run specific test file
+pytest -v                       # Verbose output
+pytest -k "test_name"           # Run specific test by name
 
-# Run migrations
-alembic upgrade head
-
-# Create new migration
-alembic revision --autogenerate -m "description"
+# Frontend linting
+cd frontend
+npm run lint
 ```
+
+### Production Build
+
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Copy built files to backend static directory
+cp -r dist ../backend/static
+
+# The backend serves the frontend from /backend/static/
+# Access at http://localhost:8000/ when backend is running
+```
+
+### Database Migrations
+
+This project uses **custom migration scripts** (not Alembic):
+
+```bash
+# Migrations run automatically on server startup via start.sh
+# To run manually:
+python -c "from app.db.migrations import migrate_add_turn_tracking_columns; migrate_add_turn_tracking_columns()"
+
+# Database tables are created automatically if they don't exist
+# See backend/app/models/database.py for schema definitions
+```
+
+**Note**: The system uses SQLite in-memory for development/testing and PostgreSQL for production (Railway).
 
 ## Testing Strategy
 
@@ -226,26 +343,126 @@ alembic revision --autogenerate -m "description"
 
 ### Environment Variables
 
+**Backend (.env)**:
 ```bash
-# Gemini API
+# Required
 GEMINI_API_KEY=your_gemini_api_key
 
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/univ_consult
-
-# Redis (for session management)
-REDIS_URL=redis://localhost:6379/0
-
-# Application
+# Optional (with defaults)
+DATABASE_URL=postgresql://user:password@localhost:5432/univ_consult  # Auto-configured on Railway
+GEMINI_MODEL=gemini-2.0-flash-exp
 DEBUG=true
 LOG_LEVEL=info
+ENVIRONMENT=development
+HOST=0.0.0.0
+PORT=8000
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+```
+
+**Frontend (.env)**:
+```bash
+# Required for production
+VITE_API_URL=https://your-backend.railway.app
+
+# Required for admin access
+VITE_ADMIN_PASSWORD=your_secure_password
 ```
 
 ### Key Configuration Files
 
-- `.env`: Environment variables (never commit this)
-- `alembic.ini`: Database migration configuration
-- `docker-compose.yml`: Container orchestration for local development
+- `backend/.env`: Backend environment variables (never commit this)
+- `frontend/.env`: Frontend environment variables (never commit this)
+- `backend/.env.example`: Template for backend environment variables
+- `railway.toml`: Railway deployment configuration (root level)
+- `backend/railway.json`: Backend service configuration
+- `frontend/railway.json`: Frontend service configuration
+- `backend/start.sh`: Startup script with migrations
+
+## Admin Interface
+
+The system includes an admin interface for researchers to view and export conversation data:
+
+**Access**: Navigate to `/admin` in the deployed frontend
+
+**Authentication**: Requires password set in `VITE_ADMIN_PASSWORD` environment variable
+
+**Features**:
+- View all conversation sessions
+- Filter by user ID
+- View detailed conversation history with CPS stage annotations
+- Export session data to CSV for analysis
+- View session metrics (turn counts, stage transitions, response depth)
+
+**Admin Routes** (React Router):
+- `/admin` - Login page
+- `/admin/sessions` - Session list
+- `/admin/session/:id` - Detailed conversation view
+
+## Railway Deployment
+
+### Deployment Architecture
+
+The project is deployed as a **monolithic service** on Railway:
+- **Single service** serves both backend API and frontend static files
+- **PostgreSQL database** auto-provisioned by Railway
+- **Environment variables** managed through Railway dashboard
+
+### Deployment Configuration
+
+**Root-level `railway.toml`**:
+- Defines build and start commands
+- Runs database migrations on startup
+- Health check on `/health` endpoint
+- Auto-restart on failure
+
+**Startup Sequence**:
+1. Install Python dependencies (`pip install -r requirements.txt`)
+2. Run database migrations (`app.db.migrations.migrate_add_turn_tracking_columns()`)
+3. Start uvicorn server with 2 workers
+4. Serve React frontend from `/backend/static/`
+
+### Triggering Deployments
+
+Railway auto-deploys on git push to connected branch. To manually trigger:
+```bash
+# Touch deploy trigger file
+touch backend/DEPLOY_TRIGGER.txt
+git add backend/DEPLOY_TRIGGER.txt
+git commit -m "trigger: Railway redeploy"
+git push
+```
+
+### Environment Variables on Railway
+
+**Required**:
+- `GEMINI_API_KEY` - Google Gemini API key
+- `VITE_ADMIN_PASSWORD` - Admin interface password (frontend)
+
+**Auto-configured**:
+- `DATABASE_URL` - PostgreSQL connection (provided by Railway)
+- `PORT` - Server port (provided by Railway)
+
+**Optional**:
+- `ALLOWED_ORIGINS` - CORS origins (defaults to Railway domain)
+- `GEMINI_MODEL` - Model version (defaults to gemini-2.0-flash-exp)
+- `ENVIRONMENT` - Environment name (production/staging)
+
+### Pre-Deployment Checklist
+
+1. **Build frontend and copy to backend**:
+   ```bash
+   cd frontend
+   npm run build
+   cp -r dist ../backend/static
+   git add ../backend/static
+   git commit -m "build: Update frontend static files"
+   ```
+
+2. **Verify environment variables** in Railway dashboard
+
+3. **Test health endpoint** after deployment: `https://your-app.railway.app/health`
+
+4. **Verify admin password** is set for admin interface access
 
 ## Research Considerations
 
@@ -257,12 +474,57 @@ This project is designed for educational research. Key considerations:
 4. **Analytics**: Track metrics for creative metacognition effectiveness
 5. **Export Functionality**: Allow researchers to export conversation data for analysis
 
+## Important Development Patterns
+
+### Adding New Scaffolding Questions
+
+Edit `backend/app/resources/question_bank.py` to modify the system prompt and question examples:
+- Add stage-specific questions to respective sections
+- Include metacognition element annotations (지식/점검/조절)
+- Update behavioral rules if changing agent logic
+
+### Modifying CPS Stages
+
+1. Update stage definitions in `backend/app/resources/question_bank.py`
+2. Update frontend constants in `frontend/src/constants/scaffolding.ts`
+3. Update stage transition logic in Gemini prompt (if needed)
+4. Test stage inference with sample conversations
+
+### Database Schema Changes
+
+Since this project uses **custom migrations** (not Alembic):
+1. Modify models in `backend/app/models/database.py`
+2. Create migration function in `backend/app/db/migrations.py`
+3. Add migration call to `backend/start.sh`
+4. Test locally with SQLite before deploying
+5. Migration runs automatically on Railway deployment
+
+### Adding New API Endpoints
+
+1. Define Pydantic schemas in `backend/app/models/schemas.py`
+2. Add endpoint to appropriate router (`api/chat.py` or `api/research.py`)
+3. Add CRUD operations to `backend/app/crud/` if database access needed
+4. Update frontend API client in `frontend/src/services/api.ts`
+5. Document in API docs (FastAPI auto-generates from docstrings)
+
+### Frontend Component Development
+
+- **Styling**: Uses CSS modules (`.css` files alongside `.tsx`)
+- **Design tokens**: Global styles in `frontend/src/styles/design-tokens.css`
+- **Type safety**: Define types in `frontend/src/types/index.ts`
+- **API calls**: Use functions from `api.ts`, not direct Axios calls
+- **Routing**: Protected admin routes use `ProtectedRoute` component
+
 ## Reference Documents
 
 - `custom_requirement/ai_agent_design.md`: Detailed agent design specifications
 - `custom_requirement/scaffolding.md`: Scaffolding question examples and metacognition framework
 - `custom_requirement/question_pattern.md`: Question generation patterns per CPS stage
 - `custom_requirement/create_assignmnet.md`: Sample assignment for testing
+- `RAILWAY_DEPLOYMENT.md`: Detailed Railway deployment guide (Korean)
+- `backend/IMPLEMENTATION_REPORT.md`: Backend implementation details
+- `backend/TEST_REPORT.md`: Test coverage and results
+- `GUI_TEST_REPORT.md`: Frontend testing results
 
 ## Success Metrics
 

@@ -36,7 +36,7 @@ class GeminiService:
             logger.error(f"Failed to initialize Gemini API: {e}", exc_info=True)
             raise ValueError(f"Failed to configure Gemini API: {e}") from e
 
-        # System prompt for CPS scaffolding
+        # System prompt for CPS scaffolding (질문 모드)
         self.system_prompt = """당신은 예비교사들의 창의적 문제해결(CPS)을 돕는 사고 촉진 에이전트입니다.
 
 역할: 사고 촉진자
@@ -77,40 +77,52 @@ CPS 단계:
 
 📚 질문 생성 가이드라인:
 
-아래 예시 질문들의 톤과 방향성을 참고하되, 학습자의 실제 응답 내용에 맞춰 동적으로 질문을 생성하세요.
-예시 질문을 그대로 사용하기보다는, 학습자가 말한 구체적인 내용을 반영하여 맥락에 맞는 질문을 만드세요.
+⭐ **핵심 인지 과정 질문 (최우선 사용)**:
+- 각 CPS 단계로 **처음 전환될 때**, 반드시 해당 단계의 핵심 인지 과정 질문을 먼저 생성하세요
+- 핵심 인지 과정 질문은 학습자가 **구체적인 산출물(아이디어/해결책)**을 만들도록 촉진합니다
+- 단계 전환 직후가 아니라면, 메타인지 요소(점검/조절/지식) 기반 질문을 사용하세요
 
-도전_이해 단계 예시 (참고용):
+도전_이해 단계:
+  🌟 핵심 인지 과정 (단계 시작 시 우선):
+    - 현재 문제 속에서 어떤 요인들이 서로 영향을 주고받고 있나요?
+    - 해당 문제를 한 문장으로 정의한다면 어떻게 표현할 수 있을까요?
+    - 해당 문제를 동료교사나 학생의 관점에서 바라본다면 어떤 점이 다르게 보일까요?
+
   점검:
     - 해당 문제가 얼마나 익숙하게 느껴지나요? 그 이유는 무엇인가요?
     - 해당 문제의 난이도는 어느 정도라고 판단되나요? 그 이유는 무엇인가요?
-    - 해당 문제를 얼마나 잘 해결할 수 있을 것 같나요?
+    - 문제에서 가장 어려운 부분은 무엇인가요?
   조절:
     - 해당 문제와 예시를 충분히 이해했다고 생각하나요?
-    - 문제 해결을 위해 제시문 및 예시를 더 자세히 검토해 볼까요?
   지식:
-    - 이전에 비슷한 문제를 해결해 본 경험이 있나요? 어떤 해결책이 효과적이었나요?
+    - 이전에 비슷한 문제를 해결해 본 경험이 있나요?
 
-아이디어_생성 단계 예시 (참고용):
+아이디어_생성 단계:
+  🌟 핵심 인지 과정 (단계 시작 시 우선):
+    - 문제를 해결할 수 있는 모든 아이디어를 자유롭게 떠올려볼까요?
+    - 해당 아이디어를 제시한 이유나 근거는 무엇인가요?
+    - 지금 떠올린 아이디어의 기대되는 효과나 한계를 설명해볼까요?
+
   점검:
-    - 이 아이디어는 문제 해결 목표 달성에 얼마나 부합하나요?
-    - 현재 아이디어 수와 다양성은 충분하다고 느끼시나요?
-    - 기존 아이디어와 비교했을 때, 이 아이디어의 강점은 무엇인가요?
+    - 제시한 아이디어는 새로운 동시에 효과적인가요?
+    - 지금까지 떠올린 아이디어 수나 다양성이 충분하다고 생각하시나요?
+    - 다른 아이디어와 비교했을 때, 이 아이디어만의 강점은 무엇인가요?
   조절:
     - 지금 떠올린 아이디어를 더 발전시킬 수 있을까요?
-    - 현재 아이디어가 잘 떠오르지 않는다면, 아이디어 생성 전략을 바꿔볼까요?
   지식:
-    - 해당 문제를 해결하기 위한 아이디어 생성 전략(예: 브레인스토밍)으로 어떤 것들이 있을까요?
+    - 해당 문제를 해결하기 위한 아이디어 생성 전략으로 어떤 것들이 있을까요?
 
-실행_준비 단계 예시 (참고용):
+실행_준비 단계:
+  🌟 핵심 인지 과정 (단계 시작 시 우선):
+    - 이 아이디어를 실제로 현장에서 실행한다면 어떤 결과나 변화가 발생할까요?
+    - 아이디어 실행 과정에서 예상되는 어려움과 해결방안을 계획해볼까요?
+
   점검:
     - 도출된 아이디어들을 창의성과 실행 가능성 관점에서 평가해볼까요?
-    - 문제 해결 과정을 돌아봤을 때, 아이디어 생성을 위해 효과적이었던 전략과 그렇지 못했던 전략은 무엇인가요?
   조절:
-    - 도출한 아이디어 중 가장 창의적이면서 실행 가능한 것은 무엇인가요?
+    - 가장 창의적이면서 실행 가능한 아이디어를 골라볼까요?
   지식:
-    - 이번 문제 해결을 통해 새롭게 배운 점은 무엇인가요? 앞으로 비슷한 문제를 해결할 때 이 경험을 어떻게 활용할 수 있을까요?
-    - 이번 문제 해결을 수행하며 자신의 사고나 전략에 대해 새롭게 알게 된 점이 있나요?
+    - 이번 문제 해결을 통해 새롭게 배운 점은 무엇인가요?
 
 🔑 질문 생성 핵심 원칙:
 1. 학습자의 현재 상황과 응답 내용을 분석하여 가장 필요한 메타인지 요소를 자유롭게 선택하세요
@@ -140,6 +152,16 @@ CPS 단계:
 - 메타인지 요소는 반드시 하나만 선택
 - 개방형 질문 원칙 준수
 
+📏 응답 깊이 평가 기준 (문자 수 기반):
+- shallow: 40자 이하의 짧은 응답
+- medium: 40~90자의 적절한 길이
+- deep: 90자 이상의 긴 응답
+
+💡 LLM 자율성:
+- 학습자의 응답 깊이와 맥락을 종합적으로 고려하여 자율적으로 판단하세요
+- 위 문자 수 기준을 참고하되, 응답의 내용과 품질도 함께 고려하세요
+- Deep 응답이 2회 이상 나오면 다음 단계 전환을 고려할 수 있습니다
+
 응답 형식:
 JSON 형태로 다음 정보를 제공:
 {
@@ -151,6 +173,72 @@ JSON 형태로 다음 정보를 제공:
   "reasoning": "판단 근거"
 }
 """
+
+        # System prompt for answering mode (답변 모드)
+        self.answer_prompt = """당신은 예비교사들의 창의적 문제해결(CPS)을 돕는 사고 촉진 에이전트입니다.
+
+🔄 **양방향 상호작용 모드** - 학습자의 질문에 답변하기
+
+학습자가 질문을 하거나 의견을 구할 때, 다음 범위 내에서 답변을 제공하세요:
+
+✅ 답변 가능한 범위:
+1. **방법론/접근법 설명**: CPS 방법론, 문제 해결 접근법, 사고 전략 등을 설명
+   예: "CPS가 뭐예요?" → CPS 개념과 단계를 간단히 설명
+   예: "어떻게 접근해야 하나요?" → 현재 단계에 적합한 접근 방법 안내
+
+2. **예시 제공**: 유사한 상황이나 예시를 들어 이해를 돕기
+   예: "구체적인 예시를 들어주세요" → 교육 현장의 유사 사례 제시
+
+3. **피드백/격려**: 학습자의 아이디어나 생각에 대한 긍정적 피드백과 보완점 제시
+   예: "이 아이디어 괜찮나요?" → "좋은 출발점입니다. 추가로 고려하면 좋을 점은..."
+
+❌ 답변 불가능한 범위:
+- **직접적인 해결책 제공**: 구체적인 정답이나 완성된 해결책을 제시하지 마세요
+  예: "정답이 뭐예요?" → ❌ 정답 제공 대신, 스스로 찾아갈 수 있도록 질문으로 리다이렉트
+
+💬 답변 원칙:
+1. 1-3문장의 간결한 답변
+2. 학습자의 사고를 촉진하는 방향으로 답변
+3. 답변 후에도 추가로 생각해볼 점을 함께 제시
+4. 여전히 scaffolding 원칙 유지 (사고 촉진자 역할)
+
+응답 형식:
+JSON 형태로 다음 정보를 제공:
+{
+  "current_stage": "현재 CPS 단계",
+  "detected_metacog_needs": ["점검|조절|지식"],
+  "response_depth": "shallow|medium|deep",
+  "answer_message": "학습자 질문에 대한 답변 (1-3문장)",
+  "follow_up_question": "답변 후 추가 사고를 촉진하는 질문 (선택사항)",
+  "should_transition": false,
+  "reasoning": "답변 제공 이유"
+}
+"""
+
+    def _is_learner_question(self, message: str) -> bool:
+        """
+        Determine if the learner's message is a question requiring an answer
+
+        Args:
+            message: Learner's message
+
+        Returns:
+            True if the message is a question, False otherwise
+        """
+        # Check for question mark
+        if '?' in message or '?' in message:
+            return True
+
+        # Check for common question patterns in Korean
+        question_patterns = [
+            '뭐예요', '뭔가요', '무엇인가요', '어떻게', '왜',
+            '이유가', '설명해', '알려줘', '알려주세요',
+            '괜찮나요', '맞나요', '좋나요', '어떤가요',
+            '도와줘', '도와주세요', '의견', '생각'
+        ]
+
+        message_lower = message.lower()
+        return any(pattern in message_lower for pattern in question_patterns)
 
     def generate_scaffolding(
         self,
@@ -176,22 +264,56 @@ JSON 형태로 다음 정보를 제공:
             - reasoning: Explanation of decision
         """
         try:
+            # Validate input
+            if not user_message or not user_message.strip():
+                logger.warning("Empty user message received")
+                return self._create_fallback_response("(빈 메시지)")
+
+            # Check if learner is asking a question (답변 모드 필요)
+            is_question = self._is_learner_question(user_message)
+            logger.info(f"Message type: {'QUESTION (답변 모드)' if is_question else 'STATEMENT (질문 모드)'}")
+
             # Build conversation context
             context = self._build_context(conversation_history, current_stage)
 
+            # Select appropriate prompt based on message type
+            if is_question:
+                # 답변 모드: 학습자의 질문에 답변 제공
+                system_prompt_to_use = self.answer_prompt
+                instruction = """위 질문을 분석하여 JSON 형식으로 응답해주세요.
+응답에는 반드시 current_stage, detected_metacog_needs, response_depth, answer_message, follow_up_question (선택), should_transition, reasoning이 포함되어야 합니다.
+
+학습자의 질문에 대해 scaffolding 원칙을 유지하면서 도움이 되는 답변을 제공하세요."""
+                message_label = "학습자의 질문"
+            else:
+                # 질문 모드: 기존 scaffolding 질문 생성
+                system_prompt_to_use = self.system_prompt
+                instruction = """위 응답을 분석하여 JSON 형식으로 응답해주세요.
+응답에는 반드시 current_stage, detected_metacog_needs, response_depth, scaffolding_question, should_transition, reasoning이 포함되어야 합니다.
+
+⚠️ 학습자가 "모르겠어", "잘 모르겠어요" 같은 불확실성을 표현하면, 더 구체적인 질문으로 사고를 촉진하세요."""
+                message_label = "학습자의 현재 응답"
+
             # Construct prompt
-            prompt = f"""{self.system_prompt}
+            prompt = f"""{system_prompt_to_use}
 
 이전 대화:
 {context}
 
-학습자의 현재 응답: "{user_message}"
+{message_label}: "{user_message}"
 
-위 응답을 분석하여 JSON 형식으로 응답해주세요. 응답에는 반드시 current_stage, detected_metacog_needs, response_depth, scaffolding_question, should_transition, reasoning이 포함되어야 합니다."""
+{instruction}"""
 
-            # Generate response
+            # Generate response with timeout and error handling
+            logger.info(f"Sending request to Gemini API for message: {user_message[:50]}...")
             response = self.model.generate_content(prompt)
+
+            if not response or not response.text:
+                logger.error("Gemini API returned empty response")
+                return self._create_fallback_response(user_message)
+
             result_text = response.text
+            logger.debug(f"Raw Gemini response (first 200 chars): {result_text[:200]}")
 
             # Parse JSON response
             # Remove markdown code blocks if present
@@ -202,6 +324,27 @@ JSON 형태로 다음 정보를 제공:
 
             result = json.loads(result_text)
 
+            # Validate required fields based on mode
+            if is_question:
+                required_fields = ["current_stage", "detected_metacog_needs", "response_depth",
+                                 "answer_message", "should_transition", "reasoning"]
+                # Ensure we have answer_message and convert to scaffolding_question for consistency
+                if "answer_message" in result:
+                    # Combine answer with follow-up question if present
+                    answer_text = result["answer_message"]
+                    if "follow_up_question" in result and result["follow_up_question"]:
+                        answer_text += " " + result["follow_up_question"]
+                    result["scaffolding_question"] = answer_text
+            else:
+                required_fields = ["current_stage", "detected_metacog_needs", "response_depth",
+                                 "scaffolding_question", "should_transition", "reasoning"]
+
+            missing_fields = [field for field in required_fields if field not in result]
+            if missing_fields:
+                logger.error(f"Missing required fields in Gemini response: {missing_fields}")
+                logger.error(f"Received result: {result}")
+                return self._create_fallback_response(user_message)
+
             # Post-process: Ensure detected_metacog_needs is always a list
             if "detected_metacog_needs" in result:
                 if isinstance(result["detected_metacog_needs"], str):
@@ -209,7 +352,12 @@ JSON 형태로 다음 정보를 제공:
                     result["detected_metacog_needs"] = [result["detected_metacog_needs"]]
                     logger.warning(f"Converted detected_metacog_needs from string to list: {result['detected_metacog_needs']}")
 
-            logger.info(f"Generated scaffolding for stage: {result.get('current_stage')}")
+                # Validate it's not empty
+                if not result["detected_metacog_needs"]:
+                    logger.warning("Empty detected_metacog_needs, setting default to '점검'")
+                    result["detected_metacog_needs"] = ["점검"]
+
+            logger.info(f"Successfully generated scaffolding for stage: {result.get('current_stage')}, depth: {result.get('response_depth')}")
             return result
 
         except json.JSONDecodeError as e:
@@ -218,8 +366,14 @@ JSON 형태로 다음 정보를 제공:
             # Fallback response
             return self._create_fallback_response(user_message)
 
+        except AttributeError as e:
+            logger.error(f"Gemini API response format error: {e}", exc_info=True)
+            return self._create_fallback_response(user_message)
+
         except Exception as e:
-            logger.error(f"Error generating scaffolding: {e}", exc_info=True)
+            logger.error(f"Unexpected error generating scaffolding: {e}", exc_info=True)
+            logger.error(f"User message: {user_message}")
+            logger.error(f"Conversation history length: {len(conversation_history)}")
             return self._create_fallback_response(user_message)
 
     def _build_context(
@@ -242,14 +396,25 @@ JSON 형태로 다음 정보를 제공:
         return "\n".join(context_parts)
 
     def _create_fallback_response(self, user_message: str) -> Dict:
-        """Create fallback response when Gemini fails"""
+        """Create fallback response when Gemini fails
+
+        Provides a safe, general scaffolding question that can work in any situation.
+        """
+        logger.warning(f"Using fallback response for message: {user_message[:100]}")
+
+        # Different fallbacks based on message length
+        if len(user_message.strip()) < 10:
+            question = "조금 더 구체적으로 설명해주시겠어요? 어떤 상황인지 말씀해주세요."
+        else:
+            question = "말씀해주신 내용에 대해 조금 더 자세히 이야기해볼까요? 어떤 부분이 가장 중요하다고 생각하시나요?"
+
         return {
             "current_stage": "도전_이해",
             "detected_metacog_needs": ["점검"],
             "response_depth": "medium",
-            "scaffolding_question": "조금 더 구체적으로 설명해주시겠어요? 어떤 부분이 가장 중요하다고 생각하시나요?",
+            "scaffolding_question": question,
             "should_transition": False,
-            "reasoning": "시스템 오류로 인한 기본 응답"
+            "reasoning": "시스템 오류로 인한 안전한 기본 응답 제공"
         }
 
 

@@ -82,35 +82,8 @@ export default function EnhancedMessageCard({ message }: Props) {
 
         <div className="message-text-enhanced">{message.content}</div>
 
-        {isAgent && message.metacog_elements && message.metacog_elements.length > 0 && (
-          <div className="message-tags">
-            <div className="tags-label">촉진 요소:</div>
-            <div className="tags-list">
-              {message.metacog_elements.map((element, idx) => {
-                const purpose = message.current_stage
-                  ? getScaffoldingPurpose(message.current_stage, element)
-                  : '';
-                return (
-                  <div key={idx} className="meta-tag-wrapper">
-                    <span
-                      className="meta-tag"
-                      style={{
-                        background: METACOG_COLORS[element as keyof typeof METACOG_COLORS] || '#6B7280',
-                      }}
-                    >
-                      {element}
-                    </span>
-                    {purpose && (
-                      <span className="meta-tag-purpose">
-                        {purpose}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* Metacognition elements hidden from user view per design requirements */}
+        {/* Admin view shows these in AdminConversationView.tsx */}
 
         {isUser && message.response_depth && (
           <div

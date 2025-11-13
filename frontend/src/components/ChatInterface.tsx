@@ -204,10 +204,17 @@ export default function ChatInterface() {
                       '도전_이해': '아이디어_생성',
                       '아이디어_생성': '실행_준비',
                     };
+
+                    // Natural language stage transition messages
+                    const transitionMessages: { [key: string]: string } = {
+                      '도전_이해': '이제 문제 해결을 위한 아이디어를 떠올려보고 싶어요.',
+                      '아이디어_생성': '이제 아이디어 실행 방안을 생각해보고 싶어요.',
+                    };
+
                     const nextStage = nextStageMap[currentStage];
                     if (nextStage) {
-                      // Set the transition message in input
-                      const transitionMessage = `이제 ${nextStage.replace('_', ' ')} 단계로 이동하고 싶습니다.`;
+                      // Set the natural language transition message
+                      const transitionMessage = transitionMessages[currentStage] || `이제 ${nextStage.replace('_', ' ')} 단계로 이동하고 싶습니다.`;
                       setInputValue(transitionMessage);
 
                       // Trigger send automatically after setting input
