@@ -63,7 +63,7 @@ export default function EnhancedMessageCard({ message }: Props) {
 
       <div className="message-content-enhanced">
         <div className="message-header">
-          <span className="message-sender">{isUser ? '학습자' : 'AI 에이전트'}</span>
+          <span className="message-sender">{isUser ? '학습자' : 'MetaLane'}</span>
           <span className="message-time">
             {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
               hour: '2-digit',

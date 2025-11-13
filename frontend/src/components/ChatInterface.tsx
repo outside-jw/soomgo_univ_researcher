@@ -145,7 +145,7 @@ export default function ChatInterface() {
                 <div className="welcome-icon">🎯</div>
                 <h2>창의적 문제해결을 시작해볼까요?</h2>
                 <p className="welcome-description">
-                  AI 에이전트가 당신의 창의적 사고를 촉진하여<br />
+                  MetaLane이 당신의 창의적 사고를 촉진하여<br />
                   더 나은 해결책을 찾을 수 있도록 도와드립니다.
                 </p>
                 <div className="welcome-features">

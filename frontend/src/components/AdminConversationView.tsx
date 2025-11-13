@@ -93,7 +93,7 @@ export default function AdminConversationView() {
           <div key={conv.id} className={`conversation-item ${conv.role}`}>
             <div className="conversation-meta">
               <span className="conversation-role">
-                {conv.role === 'user' ? '학생' : 'AI 에이전트'}
+                {conv.role === 'user' ? '학생' : 'MetaLane'}
               </span>
               <span className="conversation-time">{formatDate(conv.created_at)}</span>
             </div>
