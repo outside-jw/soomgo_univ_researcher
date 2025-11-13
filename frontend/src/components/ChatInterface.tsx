@@ -207,8 +207,8 @@ export default function ChatInterface() {
 
                     // Natural language stage transition messages
                     const transitionMessages: { [key: string]: string } = {
-                      '도전_이해': '이제 문제 해결을 위한 아이디어를 떠올려보고 싶어요.',
-                      '아이디어_생성': '이제 아이디어 실행 방안을 생각해보고 싶어요.',
+                      '도전_이해': '이제 문제 해결을 위한 아이디어를 떠올려보고 싶어',
+                      '아이디어_생성': '이제 아이디어 실행 방안을 생각해보고 싶어',
                     };
 
                     const nextStage = nextStageMap[currentStage];
