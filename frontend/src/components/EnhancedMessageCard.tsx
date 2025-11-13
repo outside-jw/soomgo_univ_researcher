@@ -3,7 +3,6 @@
  * Displays messages with metacognition tags and response depth indicators
  */
 import './EnhancedMessageCard.css';
-import { getScaffoldingPurpose } from '../constants/scaffolding';
 
 interface Message {
   role: string;
@@ -19,12 +18,6 @@ interface Props {
   message: Message;
 }
 
-const METACOG_COLORS = {
-  '점검': '#10B981',
-  '조절': '#F59E0B',
-  '지식': '#3B82F6',
-};
-
 const DEPTH_COLORS = {
   shallow: '#EF4444',
   medium: '#F59E0B',
@@ -39,7 +32,6 @@ const DEPTH_LABELS = {
 
 export default function EnhancedMessageCard({ message }: Props) {
   const isUser = message.role === 'user';
-  const isAgent = message.role === 'agent';
 
   return (
     <div className={`enhanced-message ${isUser ? 'user' : 'agent'}`}>
@@ -96,7 +88,9 @@ export default function EnhancedMessageCard({ message }: Props) {
           />
         )}
 
-        {isAgent && message.reasoning && (
+        {/* "왜 이 질문을?" reasoning section hidden from user view per design requirements */}
+        {/* Backend still generates reasoning for internal analytics and admin review */}
+        {/* {isAgent && message.reasoning && (
           <details className="reasoning-section">
             <summary className="reasoning-summary">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="reasoning-icon">
@@ -111,7 +105,7 @@ export default function EnhancedMessageCard({ message }: Props) {
               <p>{message.reasoning}</p>
             </div>
           </details>
-        )}
+        )} */}
       </div>
     </div>
   );
