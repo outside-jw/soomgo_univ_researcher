@@ -179,27 +179,46 @@ JSON 형태로 다음 정보를 제공:
 
 🔄 **양방향 상호작용 모드** - 학습자의 질문에 답변하기
 
-학습자가 질문을 하거나 의견을 구할 때, 다음 범위 내에서 답변을 제공하세요:
+⚠️ **매우 중요: 답변 제공 우선!**
+학습자가 질문을 하면, 반드시 먼저 답변을 제공해야 합니다. 질문만 하지 마세요!
+
+✅ 답변 제공 방식:
+1. **먼저 질문에 대한 답변을 제공**하세요 (1-3문장)
+2. 답변 후 선택적으로 추가 사고를 촉진하는 질문을 추가할 수 있습니다
+3. **답변 없이 질문만 하는 것은 금지**입니다!
+
+📝 답변 예시:
+학습자: "브레인스토밍이 뭔가요?"
+✅ 올바른 응답:
+{
+  "answer_message": "브레인스토밍은 창의적인 아이디어를 자유롭게 떠올리는 방법입니다. 비판 없이 다양한 아이디어를 최대한 많이 생성하는 것이 핵심이에요.",
+  "follow_up_question": "어떤 문제 상황에서 브레인스토밍을 활용하고 싶으신가요?"
+}
+
+❌ 잘못된 응답 (답변 없이 질문만):
+{
+  "scaffolding_question": "브레인스토밍에 대해 궁금해하신 이유가 무엇인가요?"
+}
 
 ✅ 답변 가능한 범위:
 1. **방법론/접근법 설명**: CPS 방법론, 문제 해결 접근법, 사고 전략 등을 설명
-   예: "CPS가 뭐예요?" → CPS 개념과 단계를 간단히 설명
-   예: "어떻게 접근해야 하나요?" → 현재 단계에 적합한 접근 방법 안내
+   예: "CPS가 뭐예요?" → CPS 개념과 단계를 간단히 설명 + 추가 질문
+   예: "어떻게 접근해야 하나요?" → 현재 단계에 적합한 접근 방법 안내 + 추가 질문
 
 2. **예시 제공**: 유사한 상황이나 예시를 들어 이해를 돕기
-   예: "구체적인 예시를 들어주세요" → 교육 현장의 유사 사례 제시
+   예: "구체적인 예시를 들어주세요" → 교육 현장의 유사 사례 제시 + 추가 질문
 
 3. **피드백/격려**: 학습자의 아이디어나 생각에 대한 긍정적 피드백과 보완점 제시
-   예: "이 아이디어 괜찮나요?" → "좋은 출발점입니다. 추가로 고려하면 좋을 점은..."
+   예: "이 아이디어 괜찮나요?" → "좋은 출발점입니다. 추가로 고려하면 좋을 점은..." + 추가 질문
 
 ❌ 답변 불가능한 범위:
 - **직접적인 해결책 제공**: 구체적인 정답이나 완성된 해결책을 제시하지 마세요
-  예: "정답이 뭐예요?" → ❌ 정답 제공 대신, 스스로 찾아갈 수 있도록 질문으로 리다이렉트
+  예: "정답이 뭐예요?" → 정답 대신 스스로 찾아갈 수 있도록 가이드
 
 💬 답변 원칙:
-1. 1-3문장의 간결한 답변
-2. 학습자의 사고를 촉진하는 방향으로 답변
-3. 답변 후에도 추가로 생각해볼 점을 함께 제시
+1. **먼저 답변 제공** (answer_message 필드에)
+2. 1-3문장의 간결하고 명확한 설명
+3. 답변 후 선택적으로 추가 질문 (follow_up_question 필드에)
 4. 여전히 scaffolding 원칙 유지 (사고 촉진자 역할)
 
 응답 형식:
@@ -208,7 +227,7 @@ JSON 형태로 다음 정보를 제공:
   "current_stage": "현재 CPS 단계",
   "detected_metacog_needs": ["점검|조절|지식"],
   "response_depth": "shallow|medium|deep",
-  "answer_message": "학습자 질문에 대한 답변 (1-3문장)",
+  "answer_message": "학습자 질문에 대한 답변 (1-3문장, 필수!)",
   "follow_up_question": "답변 후 추가 사고를 촉진하는 질문 (선택사항)",
   "should_transition": false,
   "reasoning": "답변 제공 이유"
@@ -271,7 +290,9 @@ JSON 형태로 다음 정보를 제공:
 
             # Check if learner is asking a question (답변 모드 필요)
             is_question = self._is_learner_question(user_message)
+            logger.info(f"Message classification: is_question={is_question}")
             logger.info(f"Message type: {'QUESTION (답변 모드)' if is_question else 'STATEMENT (질문 모드)'}")
+            logger.info(f"Using prompt: {'ANSWER_PROMPT' if is_question else 'SYSTEM_PROMPT'}")
 
             # Build conversation context
             context = self._build_context(conversation_history, current_stage)
@@ -330,11 +351,15 @@ JSON 형태로 다음 정보를 제공:
                                  "answer_message", "should_transition", "reasoning"]
                 # Ensure we have answer_message and convert to scaffolding_question for consistency
                 if "answer_message" in result:
+                    logger.info(f"✅ Answer mode: answer_message provided: {result['answer_message'][:100]}...")
                     # Combine answer with follow-up question if present
                     answer_text = result["answer_message"]
                     if "follow_up_question" in result and result["follow_up_question"]:
+                        logger.info(f"✅ Follow-up question: {result['follow_up_question'][:100]}...")
                         answer_text += " " + result["follow_up_question"]
                     result["scaffolding_question"] = answer_text
+                else:
+                    logger.warning("⚠️ Answer mode but no answer_message in response!")
             else:
                 required_fields = ["current_stage", "detected_metacog_needs", "response_depth",
                                  "scaffolding_question", "should_transition", "reasoning"]
